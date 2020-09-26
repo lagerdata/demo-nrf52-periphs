@@ -1,0 +1,9 @@
+[LAGER]
+
+[DEVENV]
+image = lagerdata/devenv-cortexm
+mount_dir = /app
+shell = /bin/bash
+cmd.build = mkdir _build;cd _build;cmake .. -GNinja;cmake --build .
+cmd.clean = cd _build;ninja -t clean
+
