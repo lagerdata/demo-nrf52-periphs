@@ -87,7 +87,7 @@ int main(void)
     uint32_t err_code = NRF_SUCCESS;
 
     //Configure all leds on board.
-    bsp_board_init(BSP_INIT_LEDS);
+    //bsp_board_init(BSP_INIT_LEDS);
 
     //Configure TIMER_LED for generating simple light effect - leds on board will invert his state one after the other.
     nrf_drv_timer_config_t timer_cfg = NRF_DRV_TIMER_DEFAULT_CONFIG;

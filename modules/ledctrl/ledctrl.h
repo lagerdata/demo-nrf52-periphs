@@ -27,4 +27,7 @@ int32_t ledctrl_init(void);
 int32_t ledctrl_blinkled(uint32_t num_blink, uint32_t ms_blink_duration);
 int32_t ledctrl_onoff(bool led_on);
 bool ledctrl_isActive(void);
+int32_t ledctrl_start_led_show(void);
+int32_t ledctrl_stop_led_show(void);
+bool ledctrl_is_led_show_active(void);
 #endif
