@@ -43,6 +43,7 @@ target_include_directories(nrfx_sdk PUBLIC ${NRF52_SRC_DIR}/modules/nrfx
   ${NRF52_SRC_DIR}/components/libraries/balloc
   ${NRF52_SRC_DIR}/components/libraries/ringbuf
   ${NRF52_SRC_DIR}/components/libraries/atomic
+  ${NRF52_SRC_DIR}/components/libraries/delay
   ${NRF52_SRC_DIR}/components/boards
   ${NRF52_SRC_DIR}/components/libraries/memobj
   ${NRF52_SRC_DIR}/components/libraries/log/src
