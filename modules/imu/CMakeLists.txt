@@ -1,6 +1,6 @@
 
 add_library (imu STATIC "")
-target_sources(imu PRIVATE ${CMAKE_CURRENT_LIST_DIR}/imu.c)
+target_sources(imu PRIVATE ${CMAKE_CURRENT_LIST_DIR}/mpu9250.c)
 target_include_directories(imu PUBLIC ${CMAKE_CURRENT_LIST_DIR}/)
 
 target_link_libraries(imu nrfx_sdk)

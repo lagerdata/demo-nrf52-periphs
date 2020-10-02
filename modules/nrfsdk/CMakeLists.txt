@@ -4,6 +4,7 @@ target_sources(nrfx_sdk PRIVATE ${NRF52_SRC_DIR}/modules/nrfx/mdk/gcc_startup_nr
   ${NRF52_SRC_DIR}/modules/nrfx/mdk/system_nrf52840.c
   ${NRF52_SRC_DIR}/modules/nrfx/drivers/src/nrfx_timer.c
   ${NRF52_SRC_DIR}/modules/nrfx/drivers/src/nrfx_uart.c
+  ${NRF52_SRC_DIR}/modules/nrfx/drivers/src/nrfx_spi.c
   ${NRF52_SRC_DIR}/modules/nrfx/drivers/src/prs/nrfx_prs.c
   ${NRF52_SRC_DIR}/components/libraries/util/app_error.c
   ${NRF52_SRC_DIR}/components/libraries/util/app_error_handler_gcc.c
