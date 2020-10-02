@@ -23,6 +23,6 @@
 
 //-------------------------EXPORTED FUNCTIONS-------------------------------
 void shell_init(void);
-
+void shell_uart_tx(uint8_t * p_buf, size_t len);
 
 #endif

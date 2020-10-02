@@ -4,6 +4,7 @@ target_sources(shell PRIVATE ${CMAKE_CURRENT_LIST_DIR}/shell.c)
 target_include_directories(shell PUBLIC ${CMAKE_CURRENT_LIST_DIR}/)
 
 target_link_libraries(shell ledctrl)
+target_link_libraries(shell imu)
 target_link_libraries(shell nrfx_sdk)
 
 target_compile_options(shell PRIVATE -mcpu=cortex-m4 -mthumb -mabi=aapcs -mfloat-abi=hard -mfpu=fpv4-sp-d16)

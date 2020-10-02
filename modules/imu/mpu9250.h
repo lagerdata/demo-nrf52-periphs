@@ -13,6 +13,7 @@
 #define MPU9250_DRIVER_READWRITE_FAIL -3
 #define MPU9250_BUFFER_SIZE -4
 #define MPU9250_NULL_PTR -5
+#define MPU9250_BUSY -6
 
 
 /*
@@ -203,5 +204,5 @@ int32_t mpu9250_drv_stop_measuring(void);
 int32_t mpu9250_drv_read_accel(MPU9250_accel_val *accel_val);
 int32_t mpu9250_drv_read_gyro(MPU9250_gyro_val * gyro_val);
 int32_t mpu9250_drv_read_magnetometer(MPU9250_magnetometer_val *magnetometer_val);
-int32_t mpu9250_stream_data(void);
+bool mpu9250_drv_readwrite_active(void);
 #endif

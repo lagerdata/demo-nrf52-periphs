@@ -4,6 +4,7 @@
 #include "nrfx_spi.h"
 #include "nrf_gpio.h"
 
+
 #include "mpu9250.h"
 
 
@@ -52,7 +53,7 @@ int32_t mpu9250_init(void)
     spi_config.mosi_pin = NRFX_SPI_SDO_PIN;
     spi_config.miso_pin = NRFX_SPI_SDI_PIN;
     spi_config.ss_pin = NRFX_SPI_SS_PIN;
-    spi_config.irq_priority = 6;
+    spi_config.irq_priority = 4;
     spi_config.orc = 'a';
     spi_config.frequency = NRF_SPI_FREQ_1M;
     spi_config.mode = NRF_SPI_MODE_0;
@@ -139,6 +140,7 @@ int32_t mpu9250_uninit(void)
 
 int32_t mpu9250_start_measure(MPU9250_BIT_GYRO_FS_SEL gyro_fs, MPU9250_BIT_ACCEL_FS_SEL accel_fs, MPU9250_BIT_DLPF_CFG dlpf_cfg, MPU9250_BIT_A_DLPFCFG a_dlpfcfg)
 {
+    g_xfer_in_progress = false;
     const uint8_t init_conf[][2] = {
                               {MPU9250_REG_PWR_MGMT_2,    0x00},                      /* Enable Accel & Gyro */
                               {MPU9250_REG_CONFIG,        (uint8_t)dlpf_cfg},         /* Gyro LPF */
@@ -292,17 +294,16 @@ int32_t mpu9250_drv_read_magnetometer(MPU9250_magnetometer_val *magnetometer_val
     return MPU9250_OK;
 }
 
-int32_t mpu9250_stream_data(void)
-{
 
-    return MPU9250_OK;
-}
 
 
 int32_t mpu9250_drv_write(uint8_t reg_addr, uint8_t const * const p_write_buf, size_t len)
 {
     if(len > (BUF_LEN - 1)){
         return MPU9250_BUFFER_SIZE;
+    }
+    if(true == g_xfer_in_progress){
+        return MPU9250_BUSY;
     }
     g_xfer_in_progress = true;
     g_tx_buf[0] = reg_addr;
@@ -333,6 +334,10 @@ int32_t mpu9250_drv_read(uint8_t reg_addr, size_t len)
     if(len > (BUF_LEN - 1)){
         return MPU9250_BUFFER_SIZE;
     }
+    if(true == g_xfer_in_progress){
+        return MPU9250_BUSY;
+    }
+
     g_xfer_in_progress = true;
     reg_addr |= 0x80;
     g_tx_buf[0] = reg_addr;
@@ -357,6 +362,11 @@ int32_t mpu9250_drv_read_blocking(uint8_t reg_addr, uint8_t * p_buf, size_t len)
     memcpy(p_buf, g_rx_buf+1, len);
     return ret;
 
+}
+
+bool mpu9250_drv_readwrite_active(void)
+{
+    return g_xfer_in_progress;
 }
 //-------------------------LOCAL FUNCTIONS----------------------------------
 static void nrfx_spi_evt_handler(nrfx_spi_evt_t const * p_event, void * p_context)
