@@ -201,8 +201,12 @@ int32_t mpu9250_drv_read(uint8_t reg_addr, size_t len);
 int32_t mpu9250_drv_read_blocking(uint8_t reg_addr, uint8_t * p_buf, size_t len);
 int32_t mpu9250_start_measure(MPU9250_BIT_GYRO_FS_SEL gyro_fs, MPU9250_BIT_ACCEL_FS_SEL accel_fs, MPU9250_BIT_DLPF_CFG dlpf_cfg, MPU9250_BIT_A_DLPFCFG a_dlpfcfg);
 int32_t mpu9250_drv_stop_measuring(void);
-int32_t mpu9250_drv_read_accel(MPU9250_accel_val *accel_val);
-int32_t mpu9250_drv_read_gyro(MPU9250_gyro_val * gyro_val);
-int32_t mpu9250_drv_read_magnetometer(MPU9250_magnetometer_val *magnetometer_val);
+int32_t mpu9250_drv_read_accel_blocking(MPU9250_accel_val *accel_val);
+int32_t mpu9250_drv_read_gyro_blocking(MPU9250_gyro_val * gyro_val);
+int32_t mpu9250_drv_read_magnetometer_blocking(MPU9250_magnetometer_val *magnetometer_val);
 bool mpu9250_drv_readwrite_active(void);
+int32_t mpu9250_drv_read_gyro(void);
+void mpu9250_drv_process_raw_gyro(MPU9250_accel_val * p_gyro_val);
+int32_t mpu9250_drv_read_accel(void);
+void mpu9250_drv_process_raw_accel(MPU9250_accel_val * p_gyro_val);
 #endif

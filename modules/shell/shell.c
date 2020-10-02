@@ -1,6 +1,7 @@
 #define _SHELL_C_SRC
 
 //-------------------------MODULES USED-------------------------------------
+#include <string.h>
 #include "nrfx_uart.h"
 #include "nrfx_timer.h"
 #include "ledctrl.h"
@@ -18,6 +19,7 @@
 static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
 static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx);
 static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
+static void trigger_imu_stream(void);
 //-------------------------EXPORTED VARIABLES ------------------------------
 
 
@@ -41,6 +43,7 @@ const char c_menu[] = "\
 ****************************************\r\n";
 
 static nrfx_timer_t g_polling = NRFX_TIMER_INSTANCE(2);
+static bool g_streaming_imu = false;
 //-------------------------EXPORTED FUNCTIONS-------------------------------
 void shell_init(void)
 {
@@ -75,6 +78,14 @@ void shell_init(void)
 
 
 //-------------------------LOCAL FUNCTIONS----------------------------------
+static void trigger_imu_stream(void)
+{
+    mpu9250_start_measure(MPU9250_BIT_GYRO_FS_SEL_1000DPS, MPU9250_BIT_ACCEL_FS_SEL_8G, MPU9250_BIT_DLPF_CFG_250HZ, MPU9250_BIT_A_DLPFCFG_460HZ);
+    mpu9250_drv_read_accel();
+
+
+}
+
 static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context)
 {
     switch(p_event->type){
@@ -107,6 +118,12 @@ static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
         }
         case 'i':{
             nrfx_uart_tx(&g_uart0, (uint8_t const *)"IMU streaming not implemented, could you please help?\r\n", sizeof("IMU streaming not implemented, could you please help?\r\n"));
+            if(true == g_streaming_imu){
+                g_streaming_imu = false;
+            }else{
+                trigger_imu_stream();
+                g_streaming_imu = true;
+            }
             break;
         }
         case 'l':{
@@ -131,6 +148,16 @@ static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_c
 {
     switch(event_type){
         case NRF_TIMER_EVENT_COMPARE0:{
+            if(true == g_streaming_imu){//check if we're streaming IMU data
+                if(false == mpu9250_drv_readwrite_active()){//check if IMU data is ready
+                    MPU9250_accel_val accel_val;
+                    mpu9250_drv_process_raw_accel(&accel_val);
+                    uint8_t buf[128];
+                    size_t len = snprintf((char *)buf, sizeof(buf), "%f,%f,%f\r\n",accel_val.x, accel_val.y, accel_val.z);
+                    nrfx_uart_tx(&g_uart0, (uint8_t const *)buf, len);
+                    mpu9250_drv_read_accel();
+                }
+            }
             break;
         }
 

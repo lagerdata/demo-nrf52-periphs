@@ -219,7 +219,24 @@ int32_t mpu9250_drv_stop_measuring(void)
     return mpu9250_drv_write_blocking(MPU9250_REG_PWR_MGMT_2, &buf, 1);
 }
 
-int32_t mpu9250_drv_read_gyro(MPU9250_gyro_val * gyro_val)
+int32_t mpu9250_drv_read_gyro(void)
+{
+
+    return mpu9250_drv_read(MPU9250_REG_GYRO_XOUT_HL, 6);
+}
+
+void mpu9250_drv_process_raw_gyro(MPU9250_accel_val * p_gyro_val)
+{
+    p_gyro_val->raw_x = ((uint16_t)g_rx_buf[0 + 1] << 8) | g_rx_buf[1 + 1];
+    p_gyro_val->raw_y = ((uint16_t)g_rx_buf[2 + 1] << 8) | g_rx_buf[3 + 1];
+    p_gyro_val->raw_z = ((uint16_t)g_rx_buf[4 + 1] << 8) | g_rx_buf[5 + 1];
+
+    p_gyro_val->x = (float)(int16_t)p_gyro_val->raw_x / g_gyro_div;
+    p_gyro_val->y = (float)(int16_t)p_gyro_val->raw_y / g_gyro_div;
+    p_gyro_val->z = (float)(int16_t)p_gyro_val->raw_z / g_gyro_div;
+}
+
+int32_t mpu9250_drv_read_gyro_blocking(MPU9250_gyro_val * gyro_val)
 {
     if(NULL == gyro_val){
         return MPU9250_NULL_PTR;
@@ -241,7 +258,25 @@ int32_t mpu9250_drv_read_gyro(MPU9250_gyro_val * gyro_val)
     return MPU9250_OK;
 }
 
-int32_t mpu9250_drv_read_accel(MPU9250_accel_val *accel_val)
+int32_t mpu9250_drv_read_accel(void)
+{
+
+    return mpu9250_drv_read(MPU9250_REG_ACCEL_XOUT_HL, 6);
+}
+
+void mpu9250_drv_process_raw_accel(MPU9250_accel_val * p_accel_val)
+{
+    p_accel_val->raw_x = ((uint16_t)g_rx_buf[0 + 1] << 8) | g_rx_buf[1 + 1];
+    p_accel_val->raw_y = ((uint16_t)g_rx_buf[2 + 1] << 8) | g_rx_buf[3 + 1];
+    p_accel_val->raw_z = ((uint16_t)g_rx_buf[4 + 1] << 8) | g_rx_buf[5 + 1];
+
+    p_accel_val->x = (float)(int16_t)p_accel_val->raw_x / g_accel_div;
+    p_accel_val->y = (float)(int16_t)p_accel_val->raw_y / g_accel_div;
+    p_accel_val->z = (float)(int16_t)p_accel_val->raw_z / g_accel_div;
+}
+
+
+int32_t mpu9250_drv_read_accel_blocking(MPU9250_accel_val *accel_val)
 {
     if(NULL == accel_val){
         return MPU9250_NULL_PTR;
@@ -263,7 +298,7 @@ int32_t mpu9250_drv_read_accel(MPU9250_accel_val *accel_val)
     return MPU9250_OK;
 }
 
-int32_t mpu9250_drv_read_magnetometer(MPU9250_magnetometer_val *magnetometer_val)
+int32_t mpu9250_drv_read_magnetometer_blocking(MPU9250_magnetometer_val *magnetometer_val)
 {
     if(NULL == magnetometer_val){
         return MPU9250_NULL_PTR;
