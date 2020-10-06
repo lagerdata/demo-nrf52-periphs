@@ -25,10 +25,9 @@
 //-------------------------EXPORTED FUNCTIONS-------------------------------
 int32_t ledctrl_init(void);
 int32_t ledctrl_blinkled(uint32_t num_blink, uint32_t ms_blink_duration, uint32_t num_led);
-int32_t ledctrl_rotateled(uint32_t num_rotations, uint32_t rotation_speed);
 int32_t ledctrl_onoff(bool led_on, uint32_t led_num);
-bool ledctrl_isActive(void);
-int32_t ledctrl_start_led_show(void);
-int32_t ledctrl_stop_led_show(void);
-bool ledctrl_is_led_show_active(void);
+bool ledctrl_isActive(uint32_t led_num);
+bool ledctrl_is_led_num_on(uint32_t led_num);
+
+
 #endif

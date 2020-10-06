@@ -2,7 +2,7 @@
 
 //-------------------------MODULES USED-------------------------------------
 #include "unity.h"
-#include "test1.h"
+#include "test_example.h"
 //-------------------------DEFINITIONS AND MACORS---------------------------
 
 

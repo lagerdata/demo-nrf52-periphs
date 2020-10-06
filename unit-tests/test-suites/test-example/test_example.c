@@ -1,4 +1,4 @@
-#define _TEST1_C_SRC
+#define _TEST_EXAMPLE_C_SRC
 
 //-------------------------MODULES USED-------------------------------------
 #include "unity.h"

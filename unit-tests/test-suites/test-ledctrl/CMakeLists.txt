@@ -13,27 +13,9 @@ set(UART_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/../../)
 target_sources(test-ledctrl PRIVATE ${UART_SRC_DIR}/unity_config.c)
 target_include_directories(test-ledctrl PRIVATE ${UART_SRC_DIR})
 
-set(NRF52_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../nRF5_SDK_17)
-target_sources(test-ledctrl PRIVATE ${NRF52_SRC_DIR}/modules/nrfx/mdk/gcc_startup_nrf52840.S
-  ${NRF52_SRC_DIR}/modules/nrfx/mdk/system_nrf52840.c)
-
-target_include_directories(test-ledctrl PUBLIC ${NRF52_SRC_DIR}/modules/nrfx
-  ${NRF52_SRC_DIR}/modules/nrfx/soc
-  ${NRF52_SRC_DIR}/modules/nrfx/mdk
-  ${NRF52_SRC_DIR}/modules/nrfx/hal
-  ${NRF52_SRC_DIR}/modules/nrfx/drivers
-  ${NRF52_SRC_DIR}/modules/nrfx/drivers/include
-  ${NRF52_SRC_DIR}/modules/nrfx/drivers/src
-  ${NRF52_SRC_DIR}/modules/nrfx/drivers/src/prs
-  ${NRF52_SRC_DIR}/modules/nrfx/templates
-  ${NRF52_SRC_DIR}/modules/nrfx/templates/nRF52840
-  ${NRF52_SRC_DIR}/modules/nrfx/helpers
-  ${NRF52_SRC_DIR}/components/libraries/delay)
-
-target_include_directories(test-ledctrl PUBLIC ${NRF52_SRC_DIR}/components/toolchain/cmsis/include)
 
 target_link_libraries(test-ledctrl ledctrl)
-target_link_libraries(test-ledctrl ticks)
+target_link_libraries(test-ledctrl nrfsdk)
 
 target_compile_options(test-ledctrl PRIVATE -mcpu=cortex-m4 -mthumb -mabi=aapcs -mfloat-abi=hard -mfpu=fpv4-sp-d16)
 target_compile_options(test-ledctrl PRIVATE $<$<COMPILE_LANGUAGE:C>:-Wall -Werror -g3 -O3 -gstrict-dwarf -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-builtin -fshort-enums>)

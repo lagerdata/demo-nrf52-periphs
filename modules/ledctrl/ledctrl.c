@@ -22,15 +22,12 @@ typedef struct{
     uint32_t num_blinks;
     uint32_t ms_blink_duration;
     uint32_t ms_cnt;
+    bool led_on_state;
 }led_info_t;
 
-typedef struct{
-    uint32_t led_show_state;
-    bool is_led_show_active;
-}led_show_t;
 //-------------------------PROTOTYPES OF LOCAL FUNCTIONS--------------------
 static void led_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
-static void led_show_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
+
 
 //-------------------------EXPORTED VARIABLES ------------------------------
 
@@ -38,13 +35,8 @@ static void led_show_timer_event_handler(nrf_timer_event_t event_type, void * p_
 
 //-------------------------GLOBAL VARIABLES---------------------------------
 static nrfx_timer_t g_timer0 = NRFX_TIMER_INSTANCE(0);
-static nrfx_timer_t g_timer1 = NRFX_TIMER_INSTANCE(1);
 const char c_led_context[] = "LEDCTRL";
-const uint32_t c_led_timer_1MS_rollover_cnt = 63;
 static led_info_t g_led_info[4];
-static led_show_t g_led_show_info = {
-                                     .led_show_state = 0,
-                                     .is_led_show_active = false};
 //-------------------------EXPORTED FUNCTIONS-------------------------------
 int32_t ledctrl_init(void)
 {
@@ -71,19 +63,6 @@ int32_t ledctrl_init(void)
     nrfx_timer_extended_compare(&g_timer0, NRF_TIMER_CC_CHANNEL2, cc_time, NRF_TIMER_SHORT_COMPARE2_CLEAR_MASK, true);
     nrfx_timer_extended_compare(&g_timer0, NRF_TIMER_CC_CHANNEL3, cc_time, NRF_TIMER_SHORT_COMPARE3_CLEAR_MASK, true);
 
-    nrfx_timer_config_t led_cfg = {
-                                   .frequency = NRF_TIMER_FREQ_16MHz,
-                                   .mode = NRF_TIMER_MODE_TIMER,
-                                   .bit_width = NRF_TIMER_BIT_WIDTH_32,
-                                   .interrupt_priority = 6,
-                                   .p_context = NULL};
-    nrfx_timer_init(&g_timer1, &led_cfg, led_show_timer_event_handler);
-    cc_time = nrfx_timer_ms_to_ticks(&g_timer1, 100);
-    nrfx_timer_extended_compare(&g_timer1, NRF_TIMER_CC_CHANNEL0, cc_time, NRF_TIMER_SHORT_COMPARE0_CLEAR_MASK, true);
-    
-
-
-
     return LEDCTRL_OK;
 }
 
@@ -103,7 +82,7 @@ int32_t ledctrl_blinkled(uint32_t num_blink, uint32_t ms_blink_duration, uint32_
 	}
     g_led_info[num_led].num_blinks = num_blink*2;
     g_led_info[num_led].ms_blink_duration = ms_blink_duration;
-    g_led_info[num_led].ms_cnt = g_led_info[0].ms_blink_duration;
+    g_led_info[num_led].ms_cnt = g_led_info[num_led].ms_blink_duration;
 
     ledctrl_onoff(true, num_led);
     nrfx_timer_clear(&g_timer0);
@@ -111,42 +90,9 @@ int32_t ledctrl_blinkled(uint32_t num_blink, uint32_t ms_blink_duration, uint32_
 	return LEDCTRL_OK;
 }
 
-int32_t ledctrl_rotateled(uint32_t num_rotations, uint32_t ms_rotation_speed)
+bool ledctrl_isActive(uint32_t led_num)
 {
-    if(num_rotations < 1){
-        return LEDCTRL_ERR;
-    }
-
-    if(ms_rotation_speed < MIN_ROTATION_SPEED){
-        return LEDCTRL_ERR;
-    }
-
-    g_led_info[0].num_blinks = num_rotations*2;
-    g_led_info[0].ms_blink_duration = ms_rotation_speed;
-    g_led_info[0].ms_cnt = g_led_info[0].ms_blink_duration;
-    nrf_delay_ms(ms_rotation_speed);
-    g_led_info[1].num_blinks = num_rotations*2;
-    g_led_info[1].ms_blink_duration = ms_rotation_speed;
-    g_led_info[1].ms_cnt = g_led_info[1].ms_blink_duration;
-    nrf_delay_ms(ms_rotation_speed);
-    g_led_info[2].num_blinks = num_rotations*2;
-    g_led_info[2].ms_blink_duration = ms_rotation_speed;
-    g_led_info[2].ms_cnt = g_led_info[2].ms_blink_duration;
-    nrf_delay_ms(ms_rotation_speed);
-    g_led_info[3].num_blinks = num_rotations*2;
-    g_led_info[3].ms_blink_duration = ms_rotation_speed;
-    g_led_info[3].ms_cnt = g_led_info[3].ms_blink_duration;
-
-    nrfx_timer_clear(&g_timer0);
-    nrfx_timer_enable(&g_timer0);
-
-
-    return LEDCTRL_OK;
-}
-
-bool ledctrl_isActive(void)
-{
-    return (bool)g_led_info[0].num_blinks;
+    return (bool)g_led_info[led_num].num_blinks;
 }
 
 int32_t ledctrl_onoff(bool led_on, uint32_t led_num)
@@ -154,34 +100,18 @@ int32_t ledctrl_onoff(bool led_on, uint32_t led_num)
 
 	if(led_on){
         nrf_gpio_pin_clear(LED_PIN(led_num));
+        g_led_info[led_num].led_on_state = true;
 	}else{
         nrf_gpio_pin_set(LED_PIN(led_num));
+        g_led_info[led_num].led_on_state = false;
 	}
 
 	return LEDCTRL_OK;
 }
 
-int32_t ledctrl_start_led_show(void)
+bool ledctrl_is_led_num_on(uint32_t led_num)
 {
-    if(false == g_led_show_info.is_led_show_active){
-        nrfx_timer_enable(&g_timer1);
-        g_led_show_info.is_led_show_active = true;
-    }
-    return 0;
-}
-
-int32_t ledctrl_stop_led_show(void)
-{
-    nrfx_timer_disable(&g_timer1);
-    nrfx_timer_clear(&g_timer1);
-    g_led_show_info.led_show_state = 0;
-    g_led_show_info.is_led_show_active = false;
-    return 0;
-}
-
-bool ledctrl_is_led_show_active(void)
-{
-    return g_led_show_info.is_led_show_active;
+    return g_led_info[led_num].led_on_state;
 }
 
 //-------------------------LOCAL FUNCTIONS----------------------------------
@@ -209,54 +139,6 @@ static void led_timer_event_handler(nrf_timer_event_t event_type, void * p_conte
             break;
         }
 
-        default:{
-            break;
-        }
-    }
-}
-
-void led_show_timer_event_handler(nrf_timer_event_t event_type, void * p_context)
-{
-    switch(event_type){
-        case NRF_TIMER_EVENT_COMPARE0:{
-
-            if(true == ledctrl_isActive()){
-                return;
-            }
-            switch(g_led_show_info.led_show_state){
-                case 0:{
-                    ledctrl_blinkled(9, 200, 0);
-                    break;
-                }
-
-                case 1:{
-                    ledctrl_blinkled(8, 400, 1);
-                    break;
-                }
-
-                case 2:{
-                    ledctrl_blinkled(6, 800, 2);
-                    break;
-                }
-
-                case 3:{
-                    ledctrl_blinkled(4, 1000, 3);
-                    break;
-                }
-
-                case 4:{
-                    ledctrl_blinkled(2, 2000, 4);
-                    break;
-                }
-
-                default:{
-                    g_led_show_info.led_show_state = 0;
-                    break;
-                }
-            }
-            g_led_show_info.led_show_state = ++g_led_show_info.led_show_state>4?0:g_led_show_info.led_show_state;
-            break;
-        }
         default:{
             break;
         }

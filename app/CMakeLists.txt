@@ -22,7 +22,7 @@ target_link_libraries(app imu)
 
 
 target_link_directories(app PRIVATE "${PROJECT_SOURCE_DIR}/linker")
-target_link_options(app PRIVATE -mcpu=cortex-m4 -mthumb -mabi=aapcs -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wl,--gc-sections -lc -lm -lnosys --specs=nano.specs -Tnrf52.ld)
+target_link_options(app PRIVATE -mcpu=cortex-m4 -mthumb -mabi=aapcs -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wl,--gc-sections -lc -lm -lnosys --specs=nano.specs -Tnrf52.ld -u _printf_float)
 
 firmware_size(app)
 generate_object(app .bin binary)
