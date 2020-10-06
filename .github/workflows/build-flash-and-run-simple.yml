@@ -23,7 +23,7 @@ jobs:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
           entrypoint: /usr/local/bin/lager
-          args: connect --device nrf52 --force --gateway blissful-badger
+          args: connect --device nrf52 --force
 
       - name: Flash and run
         uses: docker://lagerdata/lager-cli:v0.1.37
