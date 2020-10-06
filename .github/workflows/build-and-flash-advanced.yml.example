@@ -1,0 +1,57 @@
+name: Run tests
+on: [push]
+env:
+  LAGER_GATEWAY_MAP: '{"adhanali": "helpful-horse", "ehaas": "majestic-moose"}'
+
+jobs:
+  build:
+    name: Build firmware
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+
+      - name: Build
+        uses: docker://lagerdata/devenv-cortexm@sha256:2742d3fc1d3794d84afbe5aee79a1854a9079a2468d26d083f5d67c98435db3a
+        with:
+          entrypoint: /bin/bash
+          args: -c "exec /usr/local/bin/lager exec build"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: hexfile
+          path: _build/unit-tests/test-suites/test-ledctrl/test-ledctrl.hex
+
+  flash:
+    name: Flash gateway and run tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - run: cp $GITHUB_EVENT_PATH $GITHUB_WORKSPACE
+        name: Copy event to workspace
+      - uses: docker://stedolan/jq
+        name: Parse pusher
+        with:
+          entrypoint: /bin/bash
+          args: -c "echo ::set-env name=LAGER_GATEWAY::$(echo $LAGER_GATEWAY_MAP | /usr/local/bin/jq -r .$(/bin/bash -c '/usr/local/bin/jq -r .pusher.name < $GITHUB_WORKSPACE/$(basename $GITHUB_EVENT_PATH)'))"
+
+      - name: Connect ${{ env.LAGER_GATEWAY }}
+        uses: docker://lagerdata/lager-cli:v0.1.34
+        env:
+          LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
+        with:
+          entrypoint: /bin/bash
+          args: -c "exec /usr/local/bin/lager connect --device nrf52 --interface ftdi --transport swd --force"
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: hexfile
+
+      - name: Testrun ${{ env.LAGER_GATEWAY }}
+        uses: docker://lagerdata/lager-cli:v0.1.34
+        env:
+          LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
+        with:
+          entrypoint: /bin/bash
+          args: -c "exec /usr/local/bin/lager testrun --serial-device /dev/ttyACM0 --hexfile $GITHUB_WORKSPACE/test-ledctrl.hex"
