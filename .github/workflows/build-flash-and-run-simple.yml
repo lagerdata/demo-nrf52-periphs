@@ -18,7 +18,7 @@ jobs:
           args: exec build
 
       - name: Connect to debugger
-        uses: docker://lagerdata/lager-cli:v0.1.37
+        uses: docker://lagerdata/lager-cli:v0.1.42
         env:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
@@ -26,9 +26,20 @@ jobs:
           args: connect --device nrf52 --force
 
       - name: Flash and run
-        uses: docker://lagerdata/lager-cli:v0.1.37
+        uses: docker://lagerdata/lager-cli:v0.1.42
         env:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
           entrypoint: /usr/local/bin/lager
           args: testrun --serial-device /dev/ttyACM0 --hexfile _build/unit-tests/test-suites/test-example/test-example.hex
+
+      - name: Copy hex into LED test folder
+        run: cp _build/app/app.hex system-tests/led_test
+
+      - name: LED Test
+        uses: docker://lagerdata/lager-cli:v0.1.42
+        env:
+          LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
+        with:
+          entrypoint: /usr/local/bin/lager
+          args: python system-tests/led_test

@@ -37,7 +37,9 @@ const char c_menu[] = "\
 *                                      *\r\n\
 * 'h' - Print \"Hello World\"            *\r\n\
 * 'i' - Stream IMU Output Raw          *\r\n\
-* 'l' - Blink LEDs                     *\r\n\
+* 'l' - Turn On Led                    *\r\n\
+* 'k' - Turn Off Led                   *\r\n\
+* 't' - Toggle Led                     *\r\n\
 *                                      *\r\n\
 *                                      *\r\n\
 ****************************************\r\n";
@@ -125,7 +127,24 @@ static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
             }
             break;
         }
+
         case 'l':{
+            const char led_on_msg[] = "Turning on LED 0.\r\n";
+            nrfx_uart_tx(&g_uart0, (uint8_t const *)led_on_msg, sizeof(led_on_msg));
+            ledctrl_onoff(true, 0);
+
+            break;
+        }
+
+        case 'k':{
+            const char led_on_msg[] = "Turning off LED 0.\r\n";
+            nrfx_uart_tx(&g_uart0, (uint8_t const *)led_on_msg, sizeof(led_on_msg));
+            ledctrl_onoff(false, 0);
+
+            break;
+        }
+
+        case 't':{
             if(false ==ledctrl_is_led_num_on(0)){
                 const char led_on_msg[] = "Turning on LED 0.\r\n";
                 nrfx_uart_tx(&g_uart0, (uint8_t const *)led_on_msg, sizeof(led_on_msg));
