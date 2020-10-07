@@ -45,7 +45,7 @@ def test_led_off(gateway, device, serial_port):
     data = serial_port.read(32)
     #led_state = gateway.gpio.read(LED_PIN)
     led_state = gateway.pi.read(6)
-    assert led_state == 1
+    assert led_state == 2
 
 if __name__ == '__main__':
     sys.exit(pytest.main([__file__]))
