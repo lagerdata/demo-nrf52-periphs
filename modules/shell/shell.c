@@ -36,7 +36,8 @@ const char c_menu[] = "\
 *                                      *\r\n\
 *                                      *\r\n\
 * 'h' - Print \"Hello World\"            *\r\n\
-* 'i' - Stream IMU Output Raw          *\r\n\
+* 'i' - Stream IMU Output Float        *\r\n\
+* 'r' - Stream IMU Output Raw          *\r\n\
 * 'l' - Turn On Led                    *\r\n\
 * 'k' - Turn Off Led                   *\r\n\
 * 't' - Toggle Led                     *\r\n\
@@ -46,7 +47,7 @@ const char c_menu[] = "\
 
 static nrfx_timer_t g_polling = NRFX_TIMER_INSTANCE(2);
 static bool g_streaming_imu = false;
-
+static bool g_raw = false;
 //-------------------------EXPORTED FUNCTIONS-------------------------------
 void shell_init(void)
 {
@@ -123,6 +124,18 @@ static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
             }else{
                 trigger_imu_stream();
                 g_streaming_imu = true;
+                g_raw = false;
+            }
+            break;
+        }
+
+        case 'r':{
+            if(true == g_streaming_imu){
+                g_streaming_imu = false;
+            }else{
+                trigger_imu_stream();
+                g_streaming_imu = true;
+                g_raw = true;
             }
             break;
         }
@@ -171,11 +184,15 @@ static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_c
             if(true == g_streaming_imu){//check if we're streaming IMU data
                 uint8_t accel_buf[6];
                 mpu9250_drv_read_accel(&accel_buf);
-                MPU9250_accel_val accel_val;
-                mpu9250_drv_process_raw_accel(&accel_val, &accel_buf);
-                char buf[64];
-                size_t len = sprintf((char *)buf, "ACCEL(x,y,z):%f,%f,%f\r\n",accel_val.x, accel_val.y, accel_val.z);
-                nrfx_uart_tx(&g_uart0, (uint8_t const *)buf, len);
+                if(true == g_raw){
+                    nrfx_uart_tx(&g_uart0, (uint8_t const *)accel_buf, sizeof(accel_buf));
+                }else{
+                    MPU9250_accel_val accel_val;
+                    mpu9250_drv_process_raw_accel(&accel_val, &accel_buf);
+                    char buf[64];
+                    size_t len = sprintf((char *)buf, "ACCEL(x,y,z):%f,%f,%f\r\n",accel_val.x, accel_val.y, accel_val.z);
+                    nrfx_uart_tx(&g_uart0, (uint8_t const *)buf, len);
+                }
 
             }
             break;
