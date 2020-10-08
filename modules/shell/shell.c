@@ -60,7 +60,7 @@ void shell_init(void)
                                    .hwfc = NRF_UART_HWFC_ENABLED,
                                    .parity = NRF_UART_PARITY_EXCLUDED,
                                    .baudrate = NRF_UART_BAUDRATE_115200,
-                                   .interrupt_priority = 3};
+                                   .interrupt_priority = 7};
     nrfx_uart_init(&g_uart0, &uart_cfg, uart_event_handler);
     nrfx_uart_rx_enable(&g_uart0);
     nrfx_uart_rx(&g_uart0, &g_data_buf[0], 1);
@@ -72,7 +72,7 @@ void shell_init(void)
                                .interrupt_priority = 6,
                                .p_context = NULL};
     nrfx_timer_init(&g_polling, &cfg, polling_timer_event_handler);
-    uint32_t cc_time = nrfx_timer_ms_to_ticks(&g_polling, 100);
+    uint32_t cc_time = nrfx_timer_ms_to_ticks(&g_polling, 10);
     nrfx_timer_extended_compare(&g_polling, NRF_TIMER_CC_CHANNEL0, cc_time, NRF_TIMER_SHORT_COMPARE0_CLEAR_MASK, true);
     nrfx_timer_enable(&g_polling);
 
@@ -118,7 +118,6 @@ static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
             break;
         }
         case 'i':{
-            nrfx_uart_tx(&g_uart0, (uint8_t const *)"IMU streaming not implemented, could you please help?\r\n", sizeof("IMU streaming not implemented, could you please help?\r\n"));
             if(true == g_streaming_imu){
                 g_streaming_imu = false;
             }else{

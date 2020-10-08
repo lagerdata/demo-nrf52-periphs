@@ -12,7 +12,7 @@
 #define SPI_INSTANCE  0
 #define BUF_LEN (0x20)
 //MSG_BUF_LEN must be a multiple of 0x10
-#define MSG_BUF_LEN (0x20)
+#define MSG_BUF_LEN (0x20U)
 
 #define NRFX_SPI_SCK_PIN  30
 #define NRFX_SPI_SDO_PIN 31
@@ -95,7 +95,7 @@ int32_t mpu9250_init(void)
                               {MPU9250_REG_ACCEL_CONFIG2, 0x09},
                               {MPU9250_REG_INT_PIN_CFG, 0x30},  /* Pin config */
                               //{MPU9250_REG_I2C_MST_CTRL, 0x0D},  /* I2C multi-master / 400kHz */
-                              {MPU9250_REG_USER_CTRL, 0x20},  /* I2C master mode */
+                              {MPU9250_REG_USER_CTRL, 0x40},  /* I2C master mode */
                               {0xde, 0xad}};
     for(int i=0;accel_gyro_init_conf[i][0] != 0xde;i++){
         mpu9250_drv_write(accel_gyro_init_conf[i][0], &accel_gyro_init_conf[i][1], 1);
@@ -163,7 +163,7 @@ int32_t mpu9250_uninit(void)
 int32_t mpu9250_start_measure(MPU9250_BIT_GYRO_FS_SEL gyro_fs, MPU9250_BIT_ACCEL_FS_SEL accel_fs, MPU9250_BIT_DLPF_CFG dlpf_cfg, MPU9250_BIT_A_DLPFCFG a_dlpfcfg)
 {
 
-    #if 0
+
     const uint8_t init_conf[][2] = {
                               {MPU9250_REG_PWR_MGMT_2,    0x00},                      /* Enable Accel & Gyro */
                               {MPU9250_REG_CONFIG,        (uint8_t)dlpf_cfg},         /* Gyro LPF */
@@ -178,7 +178,7 @@ int32_t mpu9250_start_measure(MPU9250_BIT_GYRO_FS_SEL gyro_fs, MPU9250_BIT_ACCEL
             return ret;
         }
     }
-    #endif
+
     switch(gyro_fs){
         case MPU9250_BIT_GYRO_FS_SEL_250DPS:{
             g_gyro_div = 131.0;
@@ -270,9 +270,9 @@ int32_t mpu9250_drv_read_accel(uint8_t (* p_accel_buf)[6])
 
 void mpu9250_drv_process_raw_accel(MPU9250_accel_val * p_accel_val, uint8_t (*p_accel_raw_buf)[6])
 {
-    p_accel_val->raw_x = ((uint16_t)(*p_accel_raw_buf[0]) << 8) | (*p_accel_raw_buf)[1];
-    p_accel_val->raw_y = ((uint16_t)(*p_accel_raw_buf[2]) << 8) | (*p_accel_raw_buf)[3];
-    p_accel_val->raw_z = ((uint16_t)(*p_accel_raw_buf[4]) << 8) | (*p_accel_raw_buf)[5];
+    p_accel_val->raw_x = (uint16_t)(((*p_accel_raw_buf)[0] << 8) | (*p_accel_raw_buf)[1]);
+    p_accel_val->raw_y = (uint16_t)(((*p_accel_raw_buf)[2] << 8) | (*p_accel_raw_buf)[3]);
+    p_accel_val->raw_z = (uint16_t)(((*p_accel_raw_buf)[4] << 8) | (*p_accel_raw_buf)[5]);
 
     p_accel_val->x = (float)(int16_t)p_accel_val->raw_x / g_accel_div;
     p_accel_val->y = (float)(int16_t)p_accel_val->raw_y / g_accel_div;
@@ -355,15 +355,7 @@ int32_t mpu9250_drv_read_blocking(uint8_t reg_addr, uint8_t * p_read_buf, size_t
 {
 
     int32_t ret = mpu9250_drv_read(reg_addr, p_read_buf, len);
-    //get index associated with this message
-    uint32_t index = 0;
-    for(uint32_t i = 0;i<MSG_BUF_LEN;i++){
-        if(p_read_buf == g_spi_buf.msg[i].p_rx_buf){
-            index = i;
-        }
-    }
-    
-    while(g_spi_buf.msg[index].rx_len > 0);
+    while(g_spi_buf.active_index != g_spi_buf.cnt);
 
     return ret;
 }
