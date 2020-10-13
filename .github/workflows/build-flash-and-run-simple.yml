@@ -12,13 +12,13 @@ jobs:
           submodules: 'recursive'
 
       - name: Build
-        uses: docker://lagerdata/devenv-cortexm@sha256:2742d3fc1d3794d84afbe5aee79a1854a9079a2468d26d083f5d67c98435db3a
+        uses: docker://lagerdata/devenv-cortexm-minimal
         with:
           entrypoint: /usr/local/bin/lager
           args: exec build
 
       - name: Connect to debugger
-        uses: docker://lagerdata/lager-cli:v0.1.43
+        uses: docker://lagerdata/lager-cli:v0.1.45
         env:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
@@ -26,7 +26,7 @@ jobs:
           args: connect --device nrf52 --force
 
       - name: Flash and run
-        uses: docker://lagerdata/lager-cli:v0.1.43
+        uses: docker://lagerdata/lager-cli:v0.1.45
         env:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
@@ -37,7 +37,7 @@ jobs:
         run: cp _build/app/app.hex system-tests/led_test
 
       - name: LED Test
-        uses: docker://lagerdata/lager-cli:v0.1.43
+        uses: docker://lagerdata/lager-cli:v0.1.45
         env:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
