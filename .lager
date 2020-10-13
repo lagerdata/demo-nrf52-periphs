@@ -1,7 +1,7 @@
 [LAGER]
 
 [DEVENV]
-image = lagerdata/devenv-cortexm
+image = lagerdata/devenv-cortexm-minimal
 mount_dir = /app
 shell = /bin/bash
 cmd.build = mkdir -p _build;cd _build; cmake .. -G Ninja;cmake --build .
