@@ -35,3 +35,4 @@ set breakpoint pending on
 
 load
 break main
+break  main.c:49

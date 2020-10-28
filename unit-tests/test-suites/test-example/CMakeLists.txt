@@ -2,7 +2,7 @@ include(../../../cmake/utils.cmake)
 
 add_executable(test-example "")
 target_sources(test-example PRIVATE ${CMAKE_CURRENT_LIST_DIR}/main_example.c
-  ${CMAKE_CURRENT_LIST_DIR}/test1.c)
+  ${CMAKE_CURRENT_LIST_DIR}/test_example.c)
 target_include_directories(test-example PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 set(UNITY_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/../../Unity/src)

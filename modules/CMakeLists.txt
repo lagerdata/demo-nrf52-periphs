@@ -2,3 +2,4 @@
 add_subdirectory(ledctrl)
 add_subdirectory(nrfsdk)
 add_subdirectory(shell)
+add_subdirectory(imu)

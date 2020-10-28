@@ -5,6 +5,7 @@
 #include "nrfx_timer.h"
 #include "ledctrl.h"
 #include "shell.h"
+#include "mpu9250.h"
 //-------------------------DEFINITIONS AND MACORS---------------------------
 
 
@@ -34,6 +35,7 @@ int main(void)
 
     ledctrl_init();
     shell_init();
+    mpu9250_init();
 
     while(1){
         __WFI();

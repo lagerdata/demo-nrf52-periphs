@@ -66,11 +66,6 @@ The results of the individual tests will be streamed back to the terminal.
 /dev/ttyS0 is the built-in gateway serial port that is accessible via a 20 pin header on the Gateway.  
 Other potential usable serial ports is determined on the types of USB devices plugged into the Gateway.*  
   
-## Drone Setup
-To test Drone integration firs make sure the demo repository is forked, then go to drone.app.lagerdata.com and 'Activate' the repository.  
-There is already a .drone.yml in the project. You can open it to examine which test images will be flashed to the board and run.  
-You can test a deploy by doing an empty commit, and then pushing to the remote repo.  
-`git commit --allow-empty`  
-`git push`  
-You can view progress of the deploy by going to drone.app.lagerdata.com, selecting the demo repository, clicking on the latest commit, and choosing "Activity Feed".  
-*NOTE: If you deleted the original development environment (.e.g `lager devenv delete`) and create new commands, then you will need to update the .drone.yml file with the new build commands in place of `lager exec build`.*  
+## CI Setup
+For more information about setting up a CI pipeline with lager checkout: https://docs.lagerdata.com/ci/index.html
+

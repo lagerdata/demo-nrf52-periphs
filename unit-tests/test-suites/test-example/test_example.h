@@ -1,5 +1,5 @@
-#ifndef _TEST1_INCLUDED
-#define _TEST1_INCLUDED
+#ifndef _TEST_EXAMPLE_INCLUDED
+#define _TEST_EXAMPLE_INCLUDED
 //-------------------------MODULES USED-------------------------------------
 
 
@@ -14,7 +14,7 @@
 
 
 //-------------------------EXPORTED VARIABLES ------------------------------
-#ifndef _TEST1_C_SRC
+#ifndef _TEST_EXAMPLE_C_SRC
 
 
 

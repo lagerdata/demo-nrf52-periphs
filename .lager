@@ -1,9 +1,9 @@
 [LAGER]
 
 [DEVENV]
-image = lagerdata/devenv-cortexm
-mount_dir = /app
+image = lagerdata/devenv-cortexm-minimal
+mount_dir = /github/workspace
 shell = /bin/bash
-cmd.build = mkdir _build;cd _build;cmake .. -GNinja;cmake --build .
+cmd.build = mkdir -p _build;cd _build;cmake .. -G Ninja;cmake --build .
 cmd.clean = cd _build;ninja -t clean
 
