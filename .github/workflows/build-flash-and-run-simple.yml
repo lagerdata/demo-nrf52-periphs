@@ -4,10 +4,11 @@ env:
   LAGER_GATEWAY: blissful-badger
 
 jobs:
-  build_flash_and_run:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout the code
+        uses: actions/checkout@v2
         with:
           submodules: 'recursive'
 
@@ -17,27 +18,57 @@ jobs:
           entrypoint: /usr/local/bin/lager
           args: exec build
 
-      - name: Connect to debugger
-        uses: docker://lagerdata/lager-cli:v0.1.47
+      - name: Upload the test hexfile
+        uses: actions/upload-artifact@v2
+        with:
+          name: test_hexfile
+          path: _build/unit-tests/test-suites/test-example/test-example.hex
+
+      - name: Upload the app hexfile
+        uses: actions/upload-artifact@v2
+        with:
+          name: app_hexfile
+          path: _build/app/app.hex
+
+  connect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect to gateway
+        uses: docker://lagerdata/lager-cli
         env:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
           entrypoint: /usr/local/bin/lager
           args: connect --device nrf52 --force
 
-      - name: Flash and run
-        uses: docker://lagerdata/lager-cli:v0.1.47
+  run_tests:
+    runs-on: ubuntu-latest
+    needs: [build, connect]
+    steps:
+      - name: Download the test hexfile
+        uses: actions/download-artifact@v2
+        with:
+          name: test_hexfile
+
+      - name: Download the app hexfile
+        uses: actions/download-artifact@v2
+        with:
+          name: app_hexfile
+
+
+      - name: Run a unit test
+        uses: docker://lagerdata/lager-cli
         env:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
           entrypoint: /usr/local/bin/lager
-          args: testrun --serial-device /dev/ttyACM0 --hexfile _build/unit-tests/test-suites/test-example/test-example.hex
+          args: testrun --serial-device /dev/ttyACM0 --hexfile $GITHUB_WORKSPACE/test-example.hex
 
       - name: Copy hex into LED test folder
-        run: cp _build/app/app.hex system-tests/led_test
+        run: cp $GITHUB_WORKSPACE/app.hex system-tests/led_test
 
-      - name: LED Test
-        uses: docker://lagerdata/lager-cli:v0.1.47
+      - name: Run LED System Test
+        uses: docker://lagerdata/lager-cli
         env:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
