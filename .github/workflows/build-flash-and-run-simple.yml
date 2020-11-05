@@ -61,7 +61,7 @@ jobs:
         with:
           name: app_hexfile
 
-      -name: Download led test python script
+      - name: Download led test python script
         uses: actions/download-artifact@v2
         with:
           name: led_test_script
