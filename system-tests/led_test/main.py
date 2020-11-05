@@ -4,6 +4,7 @@ import sys
 import time
 import pytest
 import serial
+from pexpect_serial import SerialSpawn
 import pigpio
 from lager import lager
 
@@ -11,9 +12,9 @@ from lager import lager
 LED_PIN = 0
 
 @pytest.fixture
-def serial_port():
+def serial_spawn():
     with serial.Serial('/dev/ttyACM0', 115200, timeout=1) as ser:
-        yield ser
+        yield SerialSpawn(ser)
 
 @pytest.fixture(scope='module')
 def gateway():
@@ -31,19 +32,17 @@ def device(gateway):
     yield device
     device.close()
 
-def test_led_on(gateway, device, serial_port):
+def test_led_on(gateway, device, serial_spawn):
     device.run()
-    serial_port.write(b'l')
-    data = serial_port.read(32)
-    time.sleep(0.1)
+    serial_spawn.sendline('l')
+    serial_spawn.expect('Turning on LED 0.')
     led_state = gateway.gpio.read(LED_PIN)
     assert led_state == 0
 
-def test_led_off(gateway, device, serial_port):
+def test_led_off(gateway, device, serial_spawn):
     device.run()
-    serial_port.write(b'k')
-    data = serial_port.read(32)
-    time.sleep(0.1)
+    serial_spawn.sendline('k')
+    serial_spawn.expect('Turning off LED 0.')
     led_state = gateway.gpio.read(LED_PIN)
     assert led_state == 1
 
