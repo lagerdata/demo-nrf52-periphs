@@ -74,13 +74,10 @@ jobs:
           entrypoint: /usr/local/bin/lager
           args: testrun --serial-device /dev/ttyACM0 --hexfile /github/workspace/test-example.hex
 
-      - name: Copy hex into LED test folder
-        run: mkdir /github/workspace/led_test;mv /github/workspace/app.hex ./led_test;mv /github/workspace/main.py /github/workspace//led_test
-
       - name: Run LED System Test
         uses: docker://lagerdata/lager-cli
         env:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
           entrypoint: /usr/local/bin/lager
-          args: python /github/workspace/led_test
+          args: python /github/workspace
