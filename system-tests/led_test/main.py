@@ -37,7 +37,7 @@ def test_led_on(gateway, device, serial_spawn):
     serial_spawn.sendline('l')
     serial_spawn.expect('Turning on LED 0.')
     led_state = gateway.gpio.read(LED_PIN)
-    assert led_state == 0
+    assert led_state == 1
 
 def test_led_off(gateway, device, serial_spawn):
     device.run()
