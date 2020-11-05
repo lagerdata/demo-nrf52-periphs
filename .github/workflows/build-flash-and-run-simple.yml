@@ -30,6 +30,12 @@ jobs:
           name: app_hexfile
           path: _build/app/app.hex
 
+      - name: Upload led python test script
+        uses: actions/upload-artifact@v2
+        with:
+          name: led_test_script
+          path: system-tests/led_test/main.py
+
   connect:
     runs-on: ubuntu-latest
     steps:
@@ -55,6 +61,10 @@ jobs:
         with:
           name: app_hexfile
 
+      -name: Download led test python script
+        uses: actions/download-artifact@v2
+        with:
+          name: led_test_script
 
       - name: Run a unit test
         uses: docker://lagerdata/lager-cli
@@ -65,7 +75,7 @@ jobs:
           args: testrun --serial-device /dev/ttyACM0 --hexfile /github/workspace/test-example.hex
 
       - name: Copy hex into LED test folder
-        run: cp app.hex system-tests/led_test
+        run: mkdir /github/workspace/led_test;mv /github/workspace/app.hex ./led_test;mv /github/workspace/main.py /github/workspace//led_test
 
       - name: Run LED System Test
         uses: docker://lagerdata/lager-cli
@@ -73,4 +83,4 @@ jobs:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
           entrypoint: /usr/local/bin/lager
-          args: python system-tests/led_test
+          args: python /github/workspace/led_test
