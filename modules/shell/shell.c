@@ -17,10 +17,11 @@
 //-------------------------Zig Functions------------------------------------
 void trigger_imu_stream(void);
 int32_t add(int32_t, int32_t);
+void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
 
 //-------------------------PROTOTYPES OF LOCAL FUNCTIONS--------------------
-static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
-static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx);
+// static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
+void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx);
 static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
 // static void trigger_imu_stream(void);
 //-------------------------EXPORTED VARIABLES ------------------------------
@@ -84,30 +85,30 @@ void shell_init(void)
 
 
 //-------------------------LOCAL FUNCTIONS----------------------------------
-static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context)
-{
-    switch(p_event->type){
-        case NRFX_UART_EVT_RX_DONE:{
-            handle_rx_bytes((nrfx_uart_xfer_evt_t *)&p_event->data.rxtx);
-            nrfx_uart_rx(&g_uart0, &g_data_buf[0], 1);
-            break;
-        }
+// static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context)
+// {
+//     switch(p_event->type){
+//         case NRFX_UART_EVT_RX_DONE:{
+//             handle_rx_bytes((nrfx_uart_xfer_evt_t *)&p_event->data.rxtx);
+//             nrfx_uart_rx(&g_uart0, &g_data_buf[0], 1);
+//             break;
+//         }
 
-        case NRFX_UART_EVT_TX_DONE:{
-            break;
-        }
+//         case NRFX_UART_EVT_TX_DONE:{
+//             break;
+//         }
 
-        case NRFX_UART_EVT_ERROR:{
-            break;
-        }
+//         case NRFX_UART_EVT_ERROR:{
+//             break;
+//         }
 
-        default:{
-            break;
-        }
-    }
-}
+//         default:{
+//             break;
+//         }
+//     }
+// }
 
-static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
+void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
 {
     switch(*p_rxtx->p_data){
         case 'h':{
