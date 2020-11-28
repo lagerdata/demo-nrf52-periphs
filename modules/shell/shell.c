@@ -14,15 +14,16 @@
 //-------------------------TYPEDEFS AND STRUCTURES--------------------------
 
 
+//-------------------------Zig Functions------------------------------------
+void trigger_imu_stream(void);
+int32_t add(int32_t, int32_t);
 
 //-------------------------PROTOTYPES OF LOCAL FUNCTIONS--------------------
 static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
 static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx);
 static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
-static void trigger_imu_stream(void);
+// static void trigger_imu_stream(void);
 //-------------------------EXPORTED VARIABLES ------------------------------
-
-
 
 //-------------------------GLOBAL VARIABLES---------------------------------
 static nrfx_uart_t g_uart0 = NRFX_UART_INSTANCE(0);
@@ -38,6 +39,7 @@ const char c_menu[] = "\
 * 'h' - Print \"Hello World\"            *\r\n\
 * 'i' - Stream IMU Output Float        *\r\n\
 * 'r' - Stream IMU Output Raw          *\r\n\
+* 's' - Print a sum                    *\r\n\
 * 'l' - Turn On Led                    *\r\n\
 * 'k' - Turn Off Led                   *\r\n\
 * 't' - Toggle Led                     *\r\n\
@@ -82,12 +84,6 @@ void shell_init(void)
 
 
 //-------------------------LOCAL FUNCTIONS----------------------------------
-static void trigger_imu_stream(void)
-{
-    mpu9250_start_measure(MPU9250_BIT_GYRO_FS_SEL_1000DPS, MPU9250_BIT_ACCEL_FS_SEL_8G, MPU9250_BIT_DLPF_CFG_250HZ, MPU9250_BIT_A_DLPFCFG_460HZ);
-
-}
-
 static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context)
 {
     switch(p_event->type){
@@ -116,6 +112,14 @@ static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
     switch(*p_rxtx->p_data){
         case 'h':{
             nrfx_uart_tx(&g_uart0, (uint8_t const *)"Hello World\r\n", sizeof("Hello World\r\n"));
+            break;
+        }
+        case 's': {
+            int32_t sum;
+            sum = add(40, 2);
+            char buf[32];
+            sprintf((char *)buf, "Sum: %ld\r\n", sum);
+            nrfx_uart_tx(&g_uart0, (uint8_t const *)buf, strlen(buf) + 1);
             break;
         }
         case 'i':{

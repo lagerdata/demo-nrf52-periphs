@@ -1,10 +1,10 @@
 [LAGER]
 
 [DEVENV]
-image = lagerdata/devenv-cortexm-minimal
+image = lagerdata/zigmin
 mount_dir = /github/workspace
 shell = /bin/bash
-cmd.build = mkdir -p _build;cd _build;cmake .. -G Ninja;cmake --build .
+cmd.build = cd zig && zig build && cp zig-cache/lib/libzigshell.a ../linker && cd .. && mkdir -p _build && cd _build && cmake .. -G Ninja && cmake --build .
 cmd.clean = cd _build;ninja -t clean
 
 
