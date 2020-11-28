@@ -57,3 +57,4 @@ _dbg
 .DS_STORE
 
 venv
+zig-cache
