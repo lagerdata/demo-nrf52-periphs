@@ -2,6 +2,7 @@
 
 //-------------------------MODULES USED-------------------------------------
 #include <string.h>
+#include <inttypes.h>
 #include "nrfx_uart.h"
 #include "nrfx_timer.h"
 #include "ledctrl.h"
@@ -9,47 +10,30 @@
 
 //-------------------------DEFINITIONS AND MACORS---------------------------
 
-
+int32_t add(int32_t x, int32_t y);
+void send_hello(void);
+void trigger_imu_stream(void);
+void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx);
 
 //-------------------------TYPEDEFS AND STRUCTURES--------------------------
 
 
-//-------------------------Zig Functions------------------------------------
-void trigger_imu_stream(void);
-int32_t add(int32_t, int32_t);
 
 //-------------------------PROTOTYPES OF LOCAL FUNCTIONS--------------------
 static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
-static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx);
 static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
-// static void trigger_imu_stream(void);
 //-------------------------EXPORTED VARIABLES ------------------------------
 
+
+
 //-------------------------GLOBAL VARIABLES---------------------------------
-static nrfx_uart_t g_uart0 = NRFX_UART_INSTANCE(0);
+nrfx_uart_t g_uart0 = NRFX_UART_INSTANCE(0);
 const char c_shell_context[] = "SHELL";
 static uint8_t g_data_buf[32] = {0};
-const char c_menu[] = "\
-****************************************\r\n\
-*                                      *\r\n\
-*   Welcome to Lager's Peripheral Demo *\r\n\
-*--------------------------------------*\r\n\
-*                                      *\r\n\
-*                                      *\r\n\
-* 'h' - Print \"Hello World\"            *\r\n\
-* 'i' - Stream IMU Output Float        *\r\n\
-* 'r' - Stream IMU Output Raw          *\r\n\
-* 's' - Print a sum                    *\r\n\
-* 'l' - Turn On Led                    *\r\n\
-* 'k' - Turn Off Led                   *\r\n\
-* 't' - Toggle Led                     *\r\n\
-*                                      *\r\n\
-*                                      *\r\n\
-****************************************\r\n";
 
 static nrfx_timer_t g_polling = NRFX_TIMER_INSTANCE(2);
-static bool g_streaming_imu = false;
-static bool g_raw = false;
+bool g_streaming_imu = false;
+bool g_raw = false;
 //-------------------------EXPORTED FUNCTIONS-------------------------------
 void shell_init(void)
 {
@@ -84,6 +68,7 @@ void shell_init(void)
 
 
 //-------------------------LOCAL FUNCTIONS----------------------------------
+
 static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context)
 {
     switch(p_event->type){
@@ -106,80 +91,6 @@ static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_conte
         }
     }
 }
-
-static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
-{
-    switch(*p_rxtx->p_data){
-        case 'h':{
-            nrfx_uart_tx(&g_uart0, (uint8_t const *)"Hello World\r\n", sizeof("Hello World\r\n"));
-            break;
-        }
-        case 's': {
-            int32_t sum;
-            sum = add(40, 2);
-            char buf[32];
-            sprintf((char *)buf, "Sum: %ld\r\n", sum);
-            nrfx_uart_tx(&g_uart0, (uint8_t const *)buf, strlen(buf) + 1);
-            break;
-        }
-        case 'i':{
-            if(true == g_streaming_imu){
-                g_streaming_imu = false;
-            }else{
-                trigger_imu_stream();
-                g_streaming_imu = true;
-                g_raw = false;
-            }
-            break;
-        }
-
-        case 'r':{
-            if(true == g_streaming_imu){
-                g_streaming_imu = false;
-            }else{
-                trigger_imu_stream();
-                g_streaming_imu = true;
-                g_raw = true;
-            }
-            break;
-        }
-
-        case 'l':{
-            const char led_on_msg[] = "Turning on LED 0.\r\n";
-            nrfx_uart_tx(&g_uart0, (uint8_t const *)led_on_msg, sizeof(led_on_msg));
-            ledctrl_onoff(true, 0);
-
-            break;
-        }
-
-        case 'k':{
-            const char led_on_msg[] = "Turning off LED 0.\r\n";
-            nrfx_uart_tx(&g_uart0, (uint8_t const *)led_on_msg, sizeof(led_on_msg));
-            ledctrl_onoff(false, 0);
-
-            break;
-        }
-
-        case 't':{
-            if(false ==ledctrl_is_led_num_on(0)){
-                const char led_on_msg[] = "Turning on LED 0.\r\n";
-                nrfx_uart_tx(&g_uart0, (uint8_t const *)led_on_msg, sizeof(led_on_msg));
-                ledctrl_onoff(true, 0);
-            }else{
-                const char led_off_msg[] = "Turning off LED 0.\r\n";
-                nrfx_uart_tx(&g_uart0, (uint8_t const *)led_off_msg, sizeof(led_off_msg));
-                ledctrl_onoff(false, 0);
-            }
-            break;
-        }
-
-        default:{
-            nrfx_uart_tx(&g_uart0, (uint8_t const *)c_menu, sizeof(c_menu));
-            break;
-        }
-    }
-}
-
 
 static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context)
 {

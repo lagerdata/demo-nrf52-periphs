@@ -11,7 +11,8 @@ pub const target = std.zig.CrossTarget{
 
 pub fn build(b: *Builder) void {
     const mode = b.standardReleaseOptions();
-    const lib = b.addStaticLibrary("zigshell", "src/main.zig");
+    const lib = b.addStaticLibrary("zigshell", "src/shell.zig");
+    lib.single_threaded = true;
     lib.addIncludeDir("/usr/arm-none-eabi/include");
     lib.addIncludeDir("/github/workspace/nRF5_SDK_17/modules/nrfx/drivers/include");
     lib.addIncludeDir("/github/workspace/nRF5_SDK_17/modules/nrfx");
@@ -21,13 +22,16 @@ pub fn build(b: *Builder) void {
     lib.addIncludeDir("/github/workspace/nRF5_SDK_17/components/toolchain/cmsis/include");
     lib.addIncludeDir("/github/workspace/nRF5_SDK_17/components/libraries/util");
     lib.addIncludeDir("/github/workspace/nRF5_SDK_17/components/softdevice/s140/headers");
+    lib.addIncludeDir("src");
+    lib.addLibPath("/github/workspace/_build/modules/nrfsdk");
+    lib.linkSystemLibraryName("libnrfx_sdk");
     lib.setTarget(target);
     lib.setBuildMode(mode);
     lib.install();
 
-    var main_tests = b.addTest("src/main.zig");
-    main_tests.setBuildMode(mode);
+    var shell_tests = b.addTest("src/shell.zig");
+    shell_tests.setBuildMode(mode);
 
     const test_step = b.step("test", "Run library tests");
-    test_step.dependOn(&main_tests.step);
+    test_step.dependOn(&shell_tests.step);
 }

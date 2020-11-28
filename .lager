@@ -4,7 +4,7 @@
 image = lagerdata/zigmin
 mount_dir = /github/workspace
 shell = /bin/bash
-cmd.build = cd zig && zig build && cp zig-cache/lib/libzigshell.a ../linker && cd .. && mkdir -p _build && cd _build && cmake .. -G Ninja && cmake --build .
+cmd.build = mkdir -p _build && cd _build && cmake .. -G Ninja && cmake --build . --target nrfx_sdk && cd .. && cd zig && zig build && cp zig-cache/lib/libzigshell.a ../linker && cd .. && cd _build && cmake --build .
 cmd.clean = cd _build;ninja -t clean
 
 

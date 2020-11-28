@@ -18,6 +18,7 @@ target_compile_definitions(app PRIVATE $<$<COMPILE_LANGUAGE:ASM>:__HEAP_SIZE=819
 target_link_libraries(app ledctrl)
 target_link_libraries(app nrfx_sdk)
 target_link_libraries(app shell)
+target_link_libraries(app zigshell)
 target_link_libraries(app imu)
 
 
