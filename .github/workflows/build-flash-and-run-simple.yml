@@ -1,7 +1,7 @@
 name: Simple pipeline to build firmware, flash DUT, and run tests
 on: [push]
 env:
-  LAGER_GATEWAY: blissful-badger
+  LAGER_GATEWAY: helpful-horse
 
 jobs:
   build:
@@ -80,4 +80,4 @@ jobs:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
           entrypoint: /usr/local/bin/lager
-          args: python /github/workspace
+          args: python --image lagerdata/gatewaypy3:v0.1.55 /github/workspace
