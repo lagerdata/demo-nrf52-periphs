@@ -1,7 +1,7 @@
 name: Simple pipeline to build firmware, flash DUT, and run tests
 on: [push]
 env:
-  LAGER_GATEWAY: helpful-horse
+  LAGER_GATEWAY: cheeky-chipmunk
 
 jobs:
   build:
