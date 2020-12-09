@@ -9,7 +9,7 @@ import pigpio
 from lager import lager
 
 
-LED_PIN = 0
+LED_PIN = 2
 
 @pytest.fixture
 def serial_spawn():

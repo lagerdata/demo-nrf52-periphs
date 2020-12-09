@@ -3,7 +3,7 @@
 ########################################
 # This connects to a GDB Server listening
 # for commands on localhost at tcp port 3333
-set remotetimeout 200
+set remotetimeout 5
 target remote localhost:3333
 ########################################
 
