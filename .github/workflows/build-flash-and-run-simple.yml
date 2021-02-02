@@ -80,4 +80,4 @@ jobs:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
           entrypoint: /usr/local/bin/lager
-          args: python --image lagerdata/gatewaypy3:v0.1.55 /github/workspace
+          args: python --image lagerdata/gatewaypy3:v0.1.67 /github/workspace
