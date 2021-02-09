@@ -100,7 +100,7 @@ int32_t ledctrl_onoff(bool led_on, uint32_t led_num)
 
 	if(led_on){
         nrf_gpio_pin_clear(LED_PIN(led_num));
-        g_led_info[led_num].led_on_state = true;
+        g_led_info[led_num].led_on_state = false;
 	}else{
         nrf_gpio_pin_set(LED_PIN(led_num));
         g_led_info[led_num].led_on_state = false;
