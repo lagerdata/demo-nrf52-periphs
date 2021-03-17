@@ -12,7 +12,7 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Build
+      - name: Build Project
         uses: docker://lagerdata/devenv-cortexm-minimal
         with:
           entrypoint: /usr/local/bin/lager
@@ -42,12 +42,12 @@ jobs:
       - name: Connect to gateway
         uses: docker://lagerdata/lager-cli
         env:
-          LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
+          LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }} #This is setup inside GitHub see https://docs.lagerdata.com/ci/github_actions.html
         with:
           entrypoint: /usr/local/bin/lager
           args: connect --device nrf52 --force
 
-  run_tests:
+  run_tests: #Only proceed to this step if the build and connect jobs succeeded 
     runs-on: ubuntu-latest
     needs: [build, connect]
     steps:
@@ -80,4 +80,4 @@ jobs:
           LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
         with:
           entrypoint: /usr/local/bin/lager
-          args: python --image lagerdata/gatewaypy3:v0.1.61 /github/workspace
+          args: python --image lagerdata/gatewaypy3:v0.1.76 /github/workspace
