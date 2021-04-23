@@ -42,7 +42,8 @@ jobs:
       - name: Connect to gateway
         uses: docker://lagerdata/lager-cli
         env:
-          LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }} #This is setup inside GitHub see https://docs.lagerdata.com/ci/github_actions.html
+          LAGER_TOKEN_ID: ${{ secrets.LAGER_TOKEN_ID }} 
+          LAGER_TOKEN_SECRET: ${{ secrets.LAGER_TOKEN_SECRET }}     #This is setup inside GitHub see https://docs.lagerdata.com/ci/github_actions.html     
         with:
           entrypoint: /usr/local/bin/lager
           args: connect --device nrf52 --force
@@ -69,7 +70,8 @@ jobs:
       - name: Run a unit test
         uses: docker://lagerdata/lager-cli
         env:
-          LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
+          LAGER_TOKEN_ID: ${{ secrets.LAGER_TOKEN_ID }} 
+          LAGER_TOKEN_SECRET: ${{ secrets.LAGER_TOKEN_SECRET }}
         with:
           entrypoint: /usr/local/bin/lager
           args: testrun --serial-device /dev/ttyACM0 --hexfile /github/workspace/test-example.hex
@@ -77,7 +79,8 @@ jobs:
       - name: Run LED System Test
         uses: docker://lagerdata/lager-cli
         env:
-          LAGER_SECRET_TOKEN: ${{ secrets.AKBAR_SECRET_TOKEN }}
+          LAGER_TOKEN_ID: ${{ secrets.LAGER_TOKEN_ID }} 
+          LAGER_TOKEN_SECRET: ${{ secrets.LAGER_TOKEN_SECRET }}
         with:
           entrypoint: /usr/local/bin/lager
           args: python --image lagerdata/gatewaypy3:v0.1.76 /github/workspace
