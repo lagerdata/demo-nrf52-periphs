@@ -48,10 +48,6 @@ jobs:
           entrypoint: /usr/local/bin/lager
           args: connect --device nrf52 --force
 
-      - name: Sleep for 120 seconds
-        uses: jakejarvis/wait-action@master
-        with:
-          time: '120s'
 
   run_tests: #Only proceed to this step if the build and connect jobs succeeded 
     runs-on: ubuntu-latest
