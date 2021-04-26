@@ -3,7 +3,7 @@ on: [push]
 env:
   LAGER_GATEWAY: cheeky-chipmunk
 concurrency: 
-  group: ${{ github.head_ref }}
+  group: dut
   cancel-in-progress: false
 
 jobs:
@@ -51,10 +51,6 @@ jobs:
           entrypoint: /usr/local/bin/lager
           args: connect --device nrf52 --force
 
-      - name: Sleep for 60 seconds
-        uses: jakejarvis/wait-action@master
-        with:
-          time: '60s'
 
   run_tests: #Only proceed to this step if the build and connect jobs succeeded 
     runs-on: ubuntu-latest
