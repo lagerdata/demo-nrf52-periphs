@@ -101,4 +101,4 @@ jobs:
           LAGER_TOKEN_SECRET: ${{ secrets.LAGER_TOKEN_SECRET }}
         with:
           entrypoint: /usr/local/bin/lager
-          args: python --image lagerdata/gatewaypy3:v0.1.87 /github/workspace
+          args: python /github/workspace
