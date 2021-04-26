@@ -2,6 +2,9 @@ name: Simple pipeline to build firmware, flash DUT, and run tests
 on: [push]
 env:
   LAGER_GATEWAY: cheeky-chipmunk
+concurrency: 
+  group: ${{ github.head_ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -39,14 +42,6 @@ jobs:
   connect:
     runs-on: ubuntu-latest
     steps:
-      - name: Turnstyle
-        id: turnstyle
-        uses: softprops/turnstyle@v1
-        with:
-          abort-after-seconds: 600
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Connect to gateway
         uses: docker://lagerdata/lager-cli
         env:
@@ -56,20 +51,15 @@ jobs:
           entrypoint: /usr/local/bin/lager
           args: connect --device nrf52 --force
 
-
+      - name: Sleep for 60 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '60s'
 
   run_tests: #Only proceed to this step if the build and connect jobs succeeded 
     runs-on: ubuntu-latest
     needs: [build, connect]
     steps:
-      - name: Turnstyle
-        id: turnstyle
-        uses: softprops/turnstyle@v1
-        with:
-          abort-after-seconds: 600
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
-
       - name: Download the test hexfile
         uses: actions/download-artifact@v2
         with:
