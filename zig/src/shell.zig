@@ -150,23 +150,25 @@ export fn handle_rx_bytes(p_rxtx: *const c.nrfx_uart_xfer_evt_t) void {
 //     _ = c.nrfx_timer_enable(&g_polling);
 // }
 
-// export fn polling_timer_event_handler(event_type: c.nrf_timer_event_t, p_context: ?*c_void) void {
-//     switch (event_type) {
-//         c.nrf_timer_event_t.NRF_TIMER_EVENT_COMPARE0 => {
-//             if (true == g_streaming_imu) { //check if we're streaming IMU data
-//                 // uint8_t accel_buf[6];
-//                 // mpu9250_drv_read_accel(&accel_buf);
-//                 // if(true == g_raw){
-//                 //     nrfx_uart_tx(&g_uart0, (uint8_t const *)accel_buf, sizeof(accel_buf));
-//                 // }else{
-//                 //     MPU9250_accel_val accel_val;
-//                 //     mpu9250_drv_process_raw_accel(&accel_val, &accel_buf);
-//                 //     char buf[64];
-//                 //     size_t len = sprintf((char *)buf, "ACCEL(x,y,z):%f,%f,%f\r\n",accel_val.x, accel_val.y, accel_val.z);
-//                 //     nrfx_uart_tx(&g_uart0, (uint8_t const *)buf, len);
-//                 // }
-//             }
-//         },
-//         else => return,
-//     }
-// }
+export fn polling_timer_event_handler(event_type: c.nrf_timer_event_t, p_context: ?*c_void) void {
+    switch (event_type) {
+        c.nrf_timer_event_t.NRF_TIMER_EVENT_COMPARE0 => {
+            if (true == g_streaming_imu) { //check if we're streaming IMU data
+                var accel_buf: [6]u8 = undefined;
+                _ = c.mpu9250_drv_read_accel(&accel_buf);
+                if(true == g_raw){
+                    _ = c.nrfx_uart_tx(&g_uart0, &accel_buf, accel_buf.len);
+                }else{
+                    var accel_val: c.MPU9250_accel_val = undefined;
+                    c.mpu9250_drv_process_raw_accel(&accel_val, &accel_buf);
+                    var buf: [64]u8 = undefined;
+                    const len: c_int = c.sprintf(&buf, "ACC(x,y,z):%f,%f,%f\r\n",accel_val.x, accel_val.y, accel_val.z);
+                    if (len != -1) {
+                        _ = c.nrfx_uart_tx(&g_uart0, &buf, @intCast(usize, len));
+                    }
+                }
+            }
+        },
+        else => return,
+    }
+}

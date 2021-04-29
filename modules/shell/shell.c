@@ -10,10 +10,8 @@
 
 //-------------------------DEFINITIONS AND MACORS---------------------------
 
-int32_t add(int32_t x, int32_t y);
-void send_hello(void);
-void trigger_imu_stream(void);
 void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx);
+void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
 
 //-------------------------TYPEDEFS AND STRUCTURES--------------------------
 
@@ -21,7 +19,6 @@ void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx);
 
 //-------------------------PROTOTYPES OF LOCAL FUNCTIONS--------------------
 static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
-static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
 //-------------------------EXPORTED VARIABLES ------------------------------
 
 
@@ -90,44 +87,4 @@ static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_conte
             break;
         }
     }
-}
-
-static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context)
-{
-    switch(event_type){
-        case NRF_TIMER_EVENT_COMPARE0:{
-            if(true == g_streaming_imu){//check if we're streaming IMU data
-                uint8_t accel_buf[6];
-                mpu9250_drv_read_accel(&accel_buf);
-                if(true == g_raw){
-                    nrfx_uart_tx(&g_uart0, (uint8_t const *)accel_buf, sizeof(accel_buf));
-                }else{
-                    MPU9250_accel_val accel_val;
-                    mpu9250_drv_process_raw_accel(&accel_val, &accel_buf);
-                    char buf[64];
-                    size_t len = sprintf((char *)buf, "ACCEL(x,y,z):%f,%f,%f\r\n",accel_val.x, accel_val.y, accel_val.z);
-                    nrfx_uart_tx(&g_uart0, (uint8_t const *)buf, len);
-                }
-
-            }
-            break;
-        }
-
-        case NRF_TIMER_EVENT_COMPARE1:{
-            break;
-        }
-
-        case NRF_TIMER_EVENT_COMPARE2:{
-            break;
-        }
-
-        case NRF_TIMER_EVENT_COMPARE3:{
-            break;
-        }
-
-        default:{
-            break;
-        }
-    }
-
 }
