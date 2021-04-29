@@ -10,15 +10,14 @@
 
 //-------------------------DEFINITIONS AND MACORS---------------------------
 
-void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx);
 void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
+void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
 
 //-------------------------TYPEDEFS AND STRUCTURES--------------------------
 
 
 
 //-------------------------PROTOTYPES OF LOCAL FUNCTIONS--------------------
-static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
 //-------------------------EXPORTED VARIABLES ------------------------------
 
 
@@ -26,11 +25,9 @@ static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_conte
 //-------------------------GLOBAL VARIABLES---------------------------------
 nrfx_uart_t g_uart0 = NRFX_UART_INSTANCE(0);
 const char c_shell_context[] = "SHELL";
-static uint8_t g_data_buf[32] = {0};
+uint8_t g_data_buf[32] = {0};
 
 static nrfx_timer_t g_polling = NRFX_TIMER_INSTANCE(2);
-bool g_streaming_imu = false;
-bool g_raw = false;
 //-------------------------EXPORTED FUNCTIONS-------------------------------
 void shell_init(void)
 {
@@ -66,25 +63,3 @@ void shell_init(void)
 
 //-------------------------LOCAL FUNCTIONS----------------------------------
 
-static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context)
-{
-    switch(p_event->type){
-        case NRFX_UART_EVT_RX_DONE:{
-            handle_rx_bytes((nrfx_uart_xfer_evt_t *)&p_event->data.rxtx);
-            nrfx_uart_rx(&g_uart0, &g_data_buf[0], 1);
-            break;
-        }
-
-        case NRFX_UART_EVT_TX_DONE:{
-            break;
-        }
-
-        case NRFX_UART_EVT_ERROR:{
-            break;
-        }
-
-        default:{
-            break;
-        }
-    }
-}

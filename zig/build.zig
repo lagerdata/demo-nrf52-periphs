@@ -19,6 +19,7 @@ pub fn build(b: *Builder) void {
     lib.addIncludeDir("/github/workspace/nRF5_SDK_17/modules/nrfx/mdk");
     lib.addIncludeDir("/github/workspace/nRF5_SDK_17/integration/nrfx");
     lib.addIncludeDir("/github/workspace/modules/nrfsdk");
+    lib.addIncludeDir("/github/workspace/modules/ledctrl");
     lib.addIncludeDir("/github/workspace/nRF5_SDK_17/components/toolchain/cmsis/include");
     lib.addIncludeDir("/github/workspace/nRF5_SDK_17/components/libraries/util");
     lib.addIncludeDir("/github/workspace/nRF5_SDK_17/components/softdevice/s140/headers");

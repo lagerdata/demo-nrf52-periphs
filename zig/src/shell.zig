@@ -10,6 +10,7 @@ const c = @cImport({
     @cInclude("nrfx_uart.h");
     @cInclude("nrfx_timer.h");
     @cInclude("/github/workspace/modules/imu/mpu9250.h");
+    @cInclude("ledctrl.h");
 });
 
 // threadlocal var g_uart0 = c.nrfx_uart_t{
@@ -43,10 +44,11 @@ const c_menu =
 
 
 extern var g_uart0: c.nrfx_uart_t;
-extern var g_streaming_imu: bool;
-extern var g_raw: bool;
+var g_streaming_imu = false;
+var g_raw = false;
+extern var g_data_buf: [32]u8;
 
-export fn add(a: i32, b: i32) i32 {
+fn add(a: i32, b: i32) i32 {
     return a + b;
 }
 
@@ -63,7 +65,7 @@ export fn trigger_imu_stream() void {
     _ = c.mpu9250_start_measure(MPU9250_BIT_GYRO_FS_SEL_1000DPS, MPU9250_BIT_ACCEL_FS_SEL_8G, MPU9250_BIT_DLPF_CFG_250HZ, MPU9250_BIT_A_DLPFCFG_460HZ);
 }
 
-export fn handle_rx_bytes(p_rxtx: *const c.nrfx_uart_xfer_evt_t) void {
+fn handle_rx_bytes(p_rxtx: *const c.nrfx_uart_xfer_evt_t) void {
     switch ((p_rxtx.p_data).*) {
         'h' => {
             const hello = "Hello World\r\n";
@@ -96,23 +98,23 @@ export fn handle_rx_bytes(p_rxtx: *const c.nrfx_uart_xfer_evt_t) void {
         'l' => {
             const led_on_msg = "Turning on LED 0.\r\n";
             _ = c.nrfx_uart_tx(&g_uart0, led_on_msg, led_on_msg.len);
-            // ledctrl_onoff(true, 0);
+            _ = c.ledctrl_onoff(true, 0);
         },
         'k' => {
             const led_off_msg = "Turning off LED 0.\r\n";
             _ = c.nrfx_uart_tx(&g_uart0, led_off_msg, led_off_msg.len);
-            // ledctrl_onoff(false, 0);
+            _ = c.ledctrl_onoff(false, 0);
         },
         't' => {
-            // if(!ledctrl_is_led_num_on(0)){
-            //     const char led_on_msg[] = "Turning on LED 0.\r\n";
-            //     nrfx_uart_tx(&g_uart0, (uint8_t const *)led_on_msg, sizeof(led_on_msg));
-            //     ledctrl_onoff(true, 0);
-            // }else{
-            //     const char led_off_msg[] = "Turning off LED 0.\r\n";
-            //     nrfx_uart_tx(&g_uart0, (uint8_t const *)led_off_msg, sizeof(led_off_msg));
-            //     ledctrl_onoff(false, 0);
-            // }
+            if(!c.ledctrl_is_led_num_on(0)){
+                const led_on_msg = "Turning on LED 0.\r\n";
+                _ = c.nrfx_uart_tx(&g_uart0, led_on_msg, led_on_msg.len);
+                _ = c.ledctrl_onoff(true, 0);
+            }else{
+                const led_off_msg = "Turning off LED 0.\r\n";
+                _ = c.nrfx_uart_tx(&g_uart0, led_off_msg, led_off_msg.len);
+                _ = c.ledctrl_onoff(false, 0);
+            }
         },
         else => {
             _ = c.nrfx_uart_tx(&g_uart0, c_menu, c_menu.len);
@@ -162,12 +164,24 @@ export fn polling_timer_event_handler(event_type: c.nrf_timer_event_t, p_context
                     var accel_val: c.MPU9250_accel_val = undefined;
                     c.mpu9250_drv_process_raw_accel(&accel_val, &accel_buf);
                     var buf: [64]u8 = undefined;
-                    const len: c_int = c.sprintf(&buf, "ACC(x,y,z):%f,%f,%f\r\n",accel_val.x, accel_val.y, accel_val.z);
+                    const len: c_int = c.sprintf(&buf, "ACCEL(x,y,z):%f,%f,%f\r\n",accel_val.x, accel_val.y, accel_val.z);
                     if (len != -1) {
                         _ = c.nrfx_uart_tx(&g_uart0, &buf, @intCast(usize, len));
                     }
                 }
             }
+        },
+        else => return,
+    }
+}
+
+
+
+export fn uart_event_handler(p_event: *const c.nrfx_uart_event_t, p_context: ?*c_void) void {
+    switch(p_event.type){
+        c.nrfx_uart_evt_type_t.NRFX_UART_EVT_RX_DONE => {
+            handle_rx_bytes(&(p_event.*.data.rxtx));
+            _ = c.nrfx_uart_rx(&g_uart0, &g_data_buf[0], 1);
         },
         else => return,
     }
