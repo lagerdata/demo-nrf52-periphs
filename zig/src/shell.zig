@@ -46,7 +46,7 @@ const c_menu =
 extern var g_uart0: c.nrfx_uart_t;
 var g_streaming_imu = false;
 var g_raw = false;
-extern var g_data_buf: [32]u8;
+export var g_data_buf: [32]u8 = [1]u8{0}**32;
 
 fn add(a: i32, b: i32) i32 {
     return a + b;
