@@ -24,7 +24,7 @@ void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
 
 //-------------------------GLOBAL VARIABLES---------------------------------
 nrfx_uart_t g_uart0 = NRFX_UART_INSTANCE(0);
-const char c_shell_context[] = "SHELL";
+extern char c_shell_context[];
 extern uint8_t g_data_buf[32];
 
 static nrfx_timer_t g_polling = NRFX_TIMER_INSTANCE(2);
