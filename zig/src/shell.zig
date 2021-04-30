@@ -13,12 +13,12 @@ const c = @cImport({
     @cInclude("ledctrl.h");
 });
 
-// threadlocal var g_uart0 = c.nrfx_uart_t{
+// var g_uart0 = c.nrfx_uart_t{
 //     .p_reg = c.NRF_UART0,
 //     .drv_inst_idx = c.NRFX_UART0_INST_IDX,
 // };
 
-// threadlocal var g_polling = c.nrfx_timer_t{
+// var g_polling = c.nrfx_timer_t{
 //     .p_reg = c.NRF_TIMER2,
 //     .instance_id = c.NRFX_TIMER2_INST_IDX,
 //     .cc_channel_count = c.TIMER2_CC_NUM,
@@ -47,7 +47,7 @@ extern var g_uart0: c.nrfx_uart_t;
 var g_streaming_imu = false;
 var g_raw = false;
 export var g_data_buf: [32]u8 = [1]u8{0}**32;
-export const c_shell_context = "SHELL".*;
+export var c_shell_context = "SHELL".*;
 
 fn add(a: i32, b: i32) i32 {
     return a + b;
@@ -61,7 +61,7 @@ export fn trigger_imu_stream() void {
     _ = c.mpu9250_start_measure(MPU9250_BIT_GYRO_FS_SEL_1000DPS, MPU9250_BIT_ACCEL_FS_SEL_8G, MPU9250_BIT_DLPF_CFG_250HZ, MPU9250_BIT_A_DLPFCFG_460HZ);
 }
 
-fn handle_rx_bytes(p_rxtx: *const c.nrfx_uart_xfer_evt_t, p_context: *c_void) void {
+fn handle_rx_bytes(p_rxtx: *const c.nrfx_uart_xfer_evt_t, p_context: ?*c_void) void {
     switch ((p_rxtx.p_data).*) {
         'h' => {
             const hello = "Hello World\r\n";
@@ -148,7 +148,7 @@ fn handle_rx_bytes(p_rxtx: *const c.nrfx_uart_xfer_evt_t, p_context: *c_void) vo
 //     _ = c.nrfx_timer_enable(&g_polling);
 // }
 
-export fn polling_timer_event_handler(event_type: c.nrf_timer_event_t, p_context: *c_void) void {
+export fn polling_timer_event_handler(event_type: c.nrf_timer_event_t, p_context: ?*c_void) void {
     switch (event_type) {
         c.nrf_timer_event_t.NRF_TIMER_EVENT_COMPARE0 => {
             if (true == g_streaming_imu) { //check if we're streaming IMU data
@@ -173,8 +173,8 @@ export fn polling_timer_event_handler(event_type: c.nrf_timer_event_t, p_context
 
 
 
-export fn uart_event_handler(p_event: *const c.nrfx_uart_event_t, p_context: *c_void) void {
-    switch(p_event.type){
+export fn uart_event_handler(p_event: [*c]const c.nrfx_uart_event_t, p_context: ?*c_void) void {
+    switch(p_event.*.type){
         c.nrfx_uart_evt_type_t.NRFX_UART_EVT_RX_DONE => {
             handle_rx_bytes(&(p_event.*.data.rxtx), p_context);
             _ = c.nrfx_uart_rx(&g_uart0, &g_data_buf[0], 1);
