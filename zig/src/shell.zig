@@ -9,7 +9,7 @@ const c = @cImport({
     // do stuff
     @cInclude("nrfx_uart.h");
     @cInclude("nrfx_timer.h");
-    @cInclude("/github/workspace/modules/imu/mpu9250.h");
+    @cInclude("mpu9250.h");
     @cInclude("ledctrl.h");
 });
 
@@ -47,15 +47,10 @@ extern var g_uart0: c.nrfx_uart_t;
 var g_streaming_imu = false;
 var g_raw = false;
 export var g_data_buf: [32]u8 = [1]u8{0}**32;
-export const c_shell_context = "SHELL";
+export const c_shell_context = "SHELL".*;
 
 fn add(a: i32, b: i32) i32 {
     return a + b;
-}
-
-const hello_world = "Hello World!!\r\n";
-export fn send_hello() void {
-    _ = c.nrfx_uart_tx(&g_uart0, hello_world, hello_world.len);    
 }
 
 const MPU9250_BIT_GYRO_FS_SEL_1000DPS = c.MPU9250_BIT_GYRO_FS_SEL._1000DPS;
@@ -66,7 +61,7 @@ export fn trigger_imu_stream() void {
     _ = c.mpu9250_start_measure(MPU9250_BIT_GYRO_FS_SEL_1000DPS, MPU9250_BIT_ACCEL_FS_SEL_8G, MPU9250_BIT_DLPF_CFG_250HZ, MPU9250_BIT_A_DLPFCFG_460HZ);
 }
 
-fn handle_rx_bytes(p_rxtx: *const c.nrfx_uart_xfer_evt_t) void {
+fn handle_rx_bytes(p_rxtx: *const c.nrfx_uart_xfer_evt_t, p_context: *c_void) void {
     switch ((p_rxtx.p_data).*) {
         'h' => {
             const hello = "Hello World\r\n";
@@ -153,7 +148,7 @@ fn handle_rx_bytes(p_rxtx: *const c.nrfx_uart_xfer_evt_t) void {
 //     _ = c.nrfx_timer_enable(&g_polling);
 // }
 
-export fn polling_timer_event_handler(event_type: c.nrf_timer_event_t, p_context: ?*c_void) void {
+export fn polling_timer_event_handler(event_type: c.nrf_timer_event_t, p_context: *c_void) void {
     switch (event_type) {
         c.nrf_timer_event_t.NRF_TIMER_EVENT_COMPARE0 => {
             if (true == g_streaming_imu) { //check if we're streaming IMU data
@@ -165,12 +160,12 @@ export fn polling_timer_event_handler(event_type: c.nrf_timer_event_t, p_context
                     var accel_val: c.MPU9250_accel_val = undefined;
                     c.mpu9250_drv_process_raw_accel(&accel_val, &accel_buf);
                     var buf: [64]u8 = undefined;
-                    const len: c_int = c.sprintf(&buf, "ACCEL(x,y,z):%f,%f,%f\r\n",accel_val.x, accel_val.y, accel_val.z);
+                    const len: c_int = c.sprintf(&buf, "ACC(x,y,z):%f,%f,%f\r\n",accel_val.x, accel_val.y, accel_val.z);
                     if (len != -1) {
                         _ = c.nrfx_uart_tx(&g_uart0, &buf, @intCast(usize, len));
                     }
                 }
-            }
+            } 
         },
         else => return,
     }
@@ -178,10 +173,10 @@ export fn polling_timer_event_handler(event_type: c.nrf_timer_event_t, p_context
 
 
 
-export fn uart_event_handler(p_event: *const c.nrfx_uart_event_t, p_context: ?*c_void) void {
+export fn uart_event_handler(p_event: *const c.nrfx_uart_event_t, p_context: *c_void) void {
     switch(p_event.type){
         c.nrfx_uart_evt_type_t.NRFX_UART_EVT_RX_DONE => {
-            handle_rx_bytes(&(p_event.*.data.rxtx));
+            handle_rx_bytes(&(p_event.*.data.rxtx), p_context);
             _ = c.nrfx_uart_rx(&g_uart0, &g_data_buf[0], 1);
         },
         else => return,

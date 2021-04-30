@@ -6,7 +6,6 @@ target_include_directories(shell PUBLIC ${CMAKE_CURRENT_LIST_DIR}/)
 target_link_libraries(shell ledctrl)
 target_link_libraries(shell imu)
 target_link_libraries(shell nrfx_sdk)
-target_link_libraries(shell zigshell)
 
 target_compile_options(shell PRIVATE -mcpu=cortex-m4 -mthumb -mabi=aapcs -mfloat-abi=hard -mfpu=fpv4-sp-d16)
 target_compile_options(shell PRIVATE $<$<COMPILE_LANGUAGE:C>:-Wall -Werror -g -gstrict-dwarf -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-builtin -fshort-enums>)
