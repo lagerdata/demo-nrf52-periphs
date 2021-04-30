@@ -13,16 +13,16 @@ const c = @cImport({
     @cInclude("ledctrl.h");
 });
 
-// var g_uart0 = c.nrfx_uart_t{
-//     .p_reg = c.NRF_UART0,
-//     .drv_inst_idx = c.NRFX_UART0_INST_IDX,
-// };
+export var g_uart0 = c.nrfx_uart_t{
+    .p_reg = c.NRF_UART0,
+    .drv_inst_idx = c.NRFX_UART0_INST_IDX,
+};
 
-// var g_polling = c.nrfx_timer_t{
-//     .p_reg = c.NRF_TIMER2,
-//     .instance_id = c.NRFX_TIMER2_INST_IDX,
-//     .cc_channel_count = c.TIMER2_CC_NUM,
-// };
+export var g_polling = c.nrfx_timer_t{
+    .p_reg = c.NRF_TIMER2,
+    .instance_id = c.NRFX_TIMER2_INST_IDX,
+    .cc_channel_count = c.TIMER2_CC_NUM,
+};
 
 const c_menu =
 "****************************************\r\n" ++
@@ -43,7 +43,6 @@ const c_menu =
 "****************************************\r\n";
 
 
-extern var g_uart0: c.nrfx_uart_t;
 var g_streaming_imu = false;
 var g_raw = false;
 export var g_data_buf: [32]u8 = [1]u8{0}**32;
