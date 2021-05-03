@@ -6,6 +6,7 @@
 #include "nrfx_timer.h"
 #include "ledctrl.h"
 #include "mpu9250.h"
+#include "shell.h"
 
 //-------------------------DEFINITIONS AND MACORS---------------------------
 
@@ -17,7 +18,7 @@
 
 //-------------------------PROTOTYPES OF LOCAL FUNCTIONS--------------------
 static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context);
-static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx);
+static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx, ShellContext *context);
 static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
 static void trigger_imu_stream(void);
 //-------------------------EXPORTED VARIABLES ------------------------------
@@ -26,7 +27,7 @@ static void trigger_imu_stream(void);
 
 //-------------------------GLOBAL VARIABLES---------------------------------
 static nrfx_uart_t g_uart0 = NRFX_UART_INSTANCE(0);
-const char c_shell_context[] = "SHELL";
+static ShellContext c_shell_context = {.streaming_imu = false, .raw = false};
 static uint8_t g_data_buf[32] = {0};
 const char c_menu[] = "\
 ****************************************\r\n\
@@ -46,8 +47,8 @@ const char c_menu[] = "\
 ****************************************\r\n";
 
 static nrfx_timer_t g_polling = NRFX_TIMER_INSTANCE(2);
-static bool g_streaming_imu = false;
-static bool g_raw = false;
+
+
 //-------------------------EXPORTED FUNCTIONS-------------------------------
 void shell_init(void)
 {
@@ -57,7 +58,7 @@ void shell_init(void)
                                    .pselrxd = 8,
                                    .pselcts = NRF_UART_PSEL_DISCONNECTED,
                                    .pselrts = NRF_UART_PSEL_DISCONNECTED,
-                                   .p_context = (void *)c_shell_context,
+                                   .p_context = (void *)&c_shell_context,
                                    .hwfc = NRF_UART_HWFC_ENABLED,
                                    .parity = NRF_UART_PARITY_EXCLUDED,
                                    .baudrate = NRF_UART_BAUDRATE_115200,
@@ -71,7 +72,7 @@ void shell_init(void)
                                .mode = NRF_TIMER_MODE_TIMER,
                                .bit_width = NRF_TIMER_BIT_WIDTH_32,
                                .interrupt_priority = 6,
-                               .p_context = NULL};
+                               .p_context = (void *)&c_shell_context};
     nrfx_timer_init(&g_polling, &cfg, polling_timer_event_handler);
     uint32_t cc_time = nrfx_timer_ms_to_ticks(&g_polling, 10);
     nrfx_timer_extended_compare(&g_polling, NRF_TIMER_CC_CHANNEL0, cc_time, NRF_TIMER_SHORT_COMPARE0_CLEAR_MASK, true);
@@ -90,9 +91,10 @@ static void trigger_imu_stream(void)
 
 static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_context)
 {
+    ShellContext *context = (ShellContext *)p_context;
     switch(p_event->type){
         case NRFX_UART_EVT_RX_DONE:{
-            handle_rx_bytes((nrfx_uart_xfer_evt_t *)&p_event->data.rxtx);
+            handle_rx_bytes((nrfx_uart_xfer_evt_t *)&p_event->data.rxtx, context);
             nrfx_uart_rx(&g_uart0, &g_data_buf[0], 1);
             break;
         }
@@ -111,7 +113,7 @@ static void uart_event_handler(nrfx_uart_event_t const * p_event, void * p_conte
     }
 }
 
-static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
+static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx, ShellContext *context)
 {
     switch(*p_rxtx->p_data){
         case 'h':{
@@ -119,23 +121,23 @@ static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
             break;
         }
         case 'i':{
-            if(true == g_streaming_imu){
-                g_streaming_imu = false;
+            if(true == context->streaming_imu){
+                context->streaming_imu = false;
             }else{
                 trigger_imu_stream();
-                g_streaming_imu = true;
-                g_raw = false;
+                context->streaming_imu = true;
+                context->raw = false;
             }
             break;
         }
 
         case 'r':{
-            if(true == g_streaming_imu){
-                g_streaming_imu = false;
+            if(true == context->streaming_imu){
+                context->streaming_imu = false;
             }else{
                 trigger_imu_stream();
-                g_streaming_imu = true;
-                g_raw = true;
+                context->streaming_imu = true;
+                context->raw = true;
             }
             break;
         }
@@ -179,12 +181,13 @@ static void handle_rx_bytes(nrfx_uart_xfer_evt_t * p_rxtx)
 
 static void polling_timer_event_handler(nrf_timer_event_t event_type, void * p_context)
 {
+    ShellContext *context = (ShellContext *)p_context;
     switch(event_type){
         case NRF_TIMER_EVENT_COMPARE0:{
-            if(true == g_streaming_imu){//check if we're streaming IMU data
+            if(true == context->streaming_imu){//check if we're streaming IMU data
                 uint8_t accel_buf[6];
                 mpu9250_drv_read_accel(&accel_buf);
-                if(true == g_raw){
+                if(true == context->raw){
                     nrfx_uart_tx(&g_uart0, (uint8_t const *)accel_buf, sizeof(accel_buf));
                 }else{
                     MPU9250_accel_val accel_val;

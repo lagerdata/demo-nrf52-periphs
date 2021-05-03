@@ -9,7 +9,10 @@
 
 
 //-------------------------TYPEDEFS AND STRUCTURES--------------------------
-
+typedef struct {
+    bool streaming_imu;
+    bool raw;
+} ShellContext;
 
 
 //-------------------------EXPORTED VARIABLES ------------------------------
