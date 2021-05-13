@@ -49,7 +49,7 @@ jobs:
           LAGER_TOKEN_SECRET: ${{ secrets.LAGER_TOKEN_SECRET }}     #This is setup inside GitHub see https://docs.lagerdata.com/ci/github_actions.html     
         with:
           entrypoint: /usr/local/bin/lager
-          args: connect --device nrf52 --interface jlink --transport swd --speed 4000 --force
+          args: connect --device nrf52 --interface ftdi --transport swd --speed 4000 --force
 
 
   run_tests: #Only proceed to this step if the build and connect jobs succeeded 

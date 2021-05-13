@@ -25,7 +25,7 @@ def gateway():
 
 @pytest.fixture(scope='module')
 def device(gateway):
-    device = gateway.connect("nrf52", interface="jlink", transport="swd", speed="4000", force=True)
+    device = gateway.connect("nrf52", interface="ftdi", transport="swd", speed="4000", force=True)
     device.reset(halt=True)
     hexfiles = [lager.Hexfile("app.hex")]
     device.flash(hexfiles=hexfiles)
